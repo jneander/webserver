@@ -2,13 +2,15 @@
   (:use speclj.core
         webserver.core))
 
-(import '(java.net ServerSocket Socket))
+(import '(java.net ServerSocket Socket)
+        '(java.io OutputStream PrintStream))
 
-(def client-socket-mock (Socket.))
+(def client-output-mock (proxy [java.io.ByteArrayOutputStream] []))
+(def client-socket-mock 
+  (proxy [Socket] [] (getOutputStream [] client-output-mock)))
 
 (defn mock-server-socket [port]
   (proxy [ServerSocket] [port]
-    (ServerSocket [port])
     (accept [] client-socket-mock)))
 
 (describe "#open-server-socket"
@@ -26,3 +28,12 @@
                  (.close client-socket))
           (it "connects the client and server sockets"
               (should= client-socket-mock client-socket)))
+
+(describe "#open-client-writer"
+          (before (def output-stream (open-client-writer client-socket-mock)))
+          (after (.close output-stream))
+          (it "returns a PrintStream instance"
+              (should= PrintStream (class output-stream)))
+          (it "links the PrintStream to the client socket"
+              (.print output-stream "test-value")
+              (should= "test-value" (.toString client-output-mock))))
