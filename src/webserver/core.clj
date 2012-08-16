@@ -7,3 +7,6 @@
 
 (defn open-server-socket [port]
   (java.net.ServerSocket. port))
+
+(defn connect-client-socket [server-socket]
+  (.accept server-socket))
