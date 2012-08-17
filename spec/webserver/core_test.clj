@@ -4,7 +4,9 @@
   (:import (java.io BufferedReader)))
 
 (import '(java.net ServerSocket Socket)
-        '(java.io OutputStream PrintStream))
+        '(java.io OutputStream PrintStream StringReader))
+
+(def short-header (str "one\ntwo\n\nthree\n"))
 
 (def client-output-mock (proxy [java.io.ByteArrayOutputStream] []))
 (def client-input-mock (proxy [java.io.StringBufferInputStream] ["test-string"]))
@@ -15,6 +17,8 @@
 (defn mock-server-socket [port]
   (proxy [ServerSocket] [port]
     (accept [] client-socket-mock)))
+(defn mock-client-reader [string]
+  (BufferedReader. (StringReader. string)))
 
 (describe "#open-server-socket"
           (before (def socket (open-server-socket 8080)))
@@ -56,3 +60,12 @@
             (should= nil (parse-get-request "FOO GET / HTTP")))
           (it "matches to longer request"
             (should= "/foo/bar/" (parse-get-request "GET /foo/bar/ HTTP"))))
+
+(describe "#get-header-lines"
+          (before (def header-lines (get-header-lines (mock-client-reader short-header))))
+          (it "returns a vector of strings"
+              (should= java.lang.String (class (first header-lines))))
+          (it "reads up to empty line"
+              (should= ["one" "two"] header-lines))
+          (it "stops at empty line"
+              (should-not (some #{"three"} header-lines))))

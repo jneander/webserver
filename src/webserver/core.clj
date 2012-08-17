@@ -26,3 +26,9 @@
 (defn parse-get-request [string]
   ((fn [string] (if (not (nil? string)) (last string)))
      (re-find #"^GET (.*) HTTP" string)))
+
+(defn get-header-lines [client-reader]
+  (loop [prev nil line (.readLine client-reader) lines []] 
+    (if (< 0 (.length line)) 
+      (recur line (.readLine client-reader) (conj lines line))
+      lines)))
