@@ -1,13 +1,16 @@
 (ns webserver.core-test
   (:use speclj.core
-        webserver.core))
+        webserver.core)
+  (:import (java.io BufferedReader)))
 
 (import '(java.net ServerSocket Socket)
         '(java.io OutputStream PrintStream))
 
 (def client-output-mock (proxy [java.io.ByteArrayOutputStream] []))
+(def client-input-mock (proxy [java.io.StringBufferInputStream] ["test-string"]))
 (def client-socket-mock 
-  (proxy [Socket] [] (getOutputStream [] client-output-mock)))
+  (proxy [Socket] [] (getOutputStream [] client-output-mock)
+    (getInputStream [] client-input-mock)))
 
 (defn mock-server-socket [port]
   (proxy [ServerSocket] [port]
@@ -37,3 +40,11 @@
           (it "links the PrintStream to the client socket"
               (.print output-stream "test-value")
               (should= "test-value" (.toString client-output-mock))))
+
+(describe "#open-client-reader"
+          (before (def input-stream (open-client-reader client-socket-mock)))
+          (after (.close input-stream))
+          (it "returns an BufferedReader instance"
+              (should= BufferedReader (class input-stream)))
+          (it "links the BufferedReader to the client socket"
+              (should= "test-string" (.readLine input-stream))))

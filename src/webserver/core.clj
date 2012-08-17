@@ -1,4 +1,6 @@
-(ns webserver.core)
+(ns webserver.core
+  (:import (java.io BufferedReader
+                    InputStreamReader)))
 
 (import java.io.PrintStream java.net.ServerSocket)
 
@@ -15,3 +17,8 @@
 
 (defn open-client-writer [client-socket]
   (PrintStream. (.getOutputStream client-socket)))
+
+(defn open-client-reader [client-socket]
+  (BufferedReader. 
+    (InputStreamReader. 
+      (.getInputStream client-socket))))
