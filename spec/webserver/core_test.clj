@@ -48,3 +48,11 @@
               (should= BufferedReader (class input-stream)))
           (it "links the BufferedReader to the client socket"
               (should= "test-string" (.readLine input-stream))))
+
+(describe "#parse-get-request"
+          (it "matches to a slash"
+            (should= "/" (parse-get-request "GET / HTTP/1.1")))
+          (it "does not match"
+            (should= nil (parse-get-request "FOO GET / HTTP")))
+          (it "matches to longer request"
+            (should= "/foo/bar/" (parse-get-request "GET /foo/bar/ HTTP"))))

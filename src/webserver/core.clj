@@ -22,3 +22,7 @@
   (BufferedReader. 
     (InputStreamReader. 
       (.getInputStream client-socket))))
+
+(defn parse-get-request [string]
+  ((fn [string] (if (not (nil? string)) (last string)))
+     (re-find #"^GET (.*) HTTP" string)))
