@@ -17,3 +17,11 @@
         (if (nil? host-value)
           (recur (rest lines))
           (last host-value))))))
+
+(defn respond-to-request [client-reader client-writer]
+  (let [header-lines (get-header-lines client-reader)]
+    (let [[host port] (clojure.string/split (get-host header-lines) #":")
+          path (parse-get-request (first header-lines))]
+      (.println client-writer host)
+      (.println client-writer port)
+      (.println client-writer path))))
