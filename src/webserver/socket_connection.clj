@@ -17,3 +17,10 @@
   (BufferedReader. 
     (InputStreamReader. 
       (.getInputStream client-socket))))
+
+(defn listen-and-respond [server-socket service]
+  (let [client-socket (connect-client-socket server-socket)
+        client-reader (open-client-reader client-socket)
+        client-writer (open-client-writer client-socket)]
+    (service client-reader client-writer)
+    (.close client-socket)))

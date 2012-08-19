@@ -1,14 +1,29 @@
 (ns webserver.socket-connection-test
   (:use speclj.core
-        webserver.socket-connection)
+        (webserver socket-connection
+                   request-handler))
   (:import (java.io BufferedReader OutputStream PrintStream)
            (java.net ServerSocket Socket)))
 
-(def client-output-mock (proxy [java.io.ByteArrayOutputStream] []))
-(def client-input-mock (proxy [java.io.StringBufferInputStream] ["test-string"]))
-(def client-socket-mock 
-  (proxy [Socket] [] (getOutputStream [] client-output-mock)
-    (getInputStream [] client-input-mock)))
+(defn reset-tracker[]
+  (def tracker (atom [])))
+
+(defn mock-client-streams []
+  (def client-input-mock
+    (proxy [java.io.StringBufferInputStream] ["test-input"]))
+  (def client-output-mock
+    (proxy [java.io.ByteArrayOutputStream] [])))
+
+(defn echo [client-reader client-writer]
+  (swap! tracker conj client-reader client-writer)
+  (.println client-writer (.readLine client-reader)))
+
+(defn mock-client-socket []
+  (mock-client-streams)
+  (def client-socket-mock
+    (proxy [Socket] [] 
+      (getOutputStream [] client-output-mock)
+      (getInputStream [] client-input-mock))))
 
 (defn mock-server-socket [port]
   (proxy [ServerSocket] [port]
@@ -24,6 +39,7 @@
 
 (describe "#connect-client-socket"
           (before (def server-socket (mock-server-socket 8080))
+                  (mock-client-socket)
                   (def client-socket (connect-client-socket server-socket)))
           (after (.close server-socket)
                  (.close client-socket))
@@ -31,18 +47,34 @@
               (should= client-socket-mock client-socket)))
 
 (describe "#open-client-writer"
-          (before (def output-stream (open-client-writer client-socket-mock)))
+          (before (mock-client-streams)
+                  (def output-stream (open-client-writer client-socket-mock)))
           (after (.close output-stream))
           (it "returns a PrintStream instance"
               (should= PrintStream (class output-stream)))
           (it "links the PrintStream to the client socket"
-              (.print output-stream "test-value")
-              (should= "test-value" (.toString client-output-mock))))
+              (.print output-stream "test-output")
+              (should= "test-output" (.toString client-output-mock))))
 
 (describe "#open-client-reader"
-          (before (def input-stream (open-client-reader client-socket-mock)))
+          (before (mock-client-streams)
+                  (def input-stream (open-client-reader client-socket-mock)))
           (after (.close input-stream))
           (it "returns an BufferedReader instance"
               (should= BufferedReader (class input-stream)))
           (it "links the BufferedReader to the client socket"
-              (should= "test-string" (.readLine input-stream))))
+              (should= "test-input" (.readLine input-stream))))
+
+(describe "#listen-and-respond"
+          (before (reset-tracker)
+                  (mock-client-streams)
+                  (mock-client-socket)
+                  (def server-socket (mock-server-socket 8080))
+                  (listen-and-respond server-socket echo))
+          (after (.close server-socket))
+          (it "connects with and closes client socket"
+              (should (.isClosed client-socket-mock)))
+          (it "passes a client reader/writer to the service"
+              (should= BufferedReader (class (first @tracker)))
+              (should= PrintStream (class (second @tracker)))
+              (should= "test-input\n" (.toString client-output-mock))))
