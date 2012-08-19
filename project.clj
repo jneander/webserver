@@ -6,4 +6,5 @@
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [speclj "2.1.2"]]
   :plugins [[speclj "2.1.2"]]
-  :test-paths ["spec/"])
+  :test-paths ["spec/"]
+  :main webserver.core)
