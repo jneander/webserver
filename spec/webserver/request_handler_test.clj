@@ -58,3 +58,10 @@
               (should= "8080" (some #{"8080"} @tracker)))
           (it "prints the request path"
               (should= "/foo/bar" (some #{"/foo/bar"} @tracker))))
+
+(describe "#map-request-fields"
+          (before (def request-fields (map-request-fields header-lines)))
+          (it "maps the host"
+              (should= "localhost:8080" (:host request-fields)))
+          (it "maps the path"
+              (should= "/foo/bar" (:path request-fields))))

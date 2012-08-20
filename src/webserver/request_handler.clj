@@ -25,3 +25,7 @@
       (.println client-writer host)
       (.println client-writer port)
       (.println client-writer path))))
+
+(defn map-request-fields [header-lines]
+  {:host (get-host header-lines),
+   :path (parse-get-request (first header-lines))})
