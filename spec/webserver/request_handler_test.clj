@@ -86,19 +86,16 @@
               (should (string-contains? "<p>/foo/bar</p>" response-body))))
 
 (describe "#get-response-map"
-          (before (def client-reader (mock-client-reader full-header))
-                  (def header-lines (get-header-lines client-reader))
-                  (def request-fields (map-request-fields header-lines))
-                  (def response-body (get-response-body request-fields))
-                  (def response-header (get-response-map header-lines response-body)))
+          (before-all (generate-request)
+                  (generate-response))
           (it "maps the status code to 200"
-              (should= 200 (:status response-header)))
+              (should= 200 (:status response-map)))
           (it "maps the host to 'localhost:8080'"
-              (should= "localhost:8080" (:host response-header)))
+              (should= "localhost:8080" (:host response-map)))
           (it "maps the content-type to 'text/html'"
-              (should= "text/html" (:content-type response-header)))
+              (should= "text/html" (:content-type response-map)))
           (it "maps the content-length to the length of the body"
-              (should= (.length response-body) (:content-length response-header))))
+              (should= (.length response-body) (:content-length response-map))))
 
 (describe "#get-response-header"
           (before-all (generate-request)
