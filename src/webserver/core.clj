@@ -5,4 +5,4 @@
 (defn -main [& args]
   (let [server-socket (open-server-socket 8080)]
     (while (not (.isClosed server-socket))
-      (listen-and-respond server-socket respond-to-request))))
+      (listen-and-respond server-socket print-response))))
