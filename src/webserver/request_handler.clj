@@ -34,3 +34,9 @@
   (let [[host-name host-port] (clojure.string/split (:host request-map) #":")]
     (str host-name "\r\n" host-port "\r\n"
          (:path request-map) "\r\n")))
+
+(defn get-response-map [header-lines response-body]
+  {:status 200,
+   :host (get-host header-lines),
+   :content-type "text/html",
+   :content-length (.length response-body)})

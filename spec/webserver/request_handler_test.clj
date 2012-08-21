@@ -75,3 +75,18 @@
               (should= "8080\r\n" (re-find #"8080\r\n" response-body)))
           (it "includes the path"
               (should= "/foo/bar\r\n" (re-find #"/foo/bar\r\n" response-body))))
+
+(describe "#get-response-map"
+          (before (def client-reader (mock-client-reader full-header))
+                  (def header-lines (get-header-lines client-reader))
+                  (def request-fields (map-request-fields header-lines))
+                  (def response-body (get-response-body request-fields))
+                  (def response-header (get-response-map header-lines response-body)))
+          (it "maps the status code to 200"
+              (should= 200 (:status response-header)))
+          (it "maps the host to 'localhost:8080'"
+              (should= "localhost:8080" (:host response-header)))
+          (it "maps the content-type to 'text/html'"
+              (should= "text/html" (:content-type response-header)))
+          (it "maps the content-length to the length of the body"
+              (should= (.length response-body) (:content-length response-header))))
