@@ -40,3 +40,9 @@
    :host (get-host header-lines),
    :content-type "text/html",
    :content-length (.length response-body)})
+
+(defn get-response-header [response-map]
+  (str "HTTP/1.1 200 OK\r\n"
+       "Host: " (:host response-map) "\r\n"
+       "Content-Type: " (:content-type response-map) "\r\n"
+       "Content-Length: " (:content-length response-map) "\r\n"))

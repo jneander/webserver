@@ -21,6 +21,15 @@
       (println [arg] (swap! tracker conj arg)))))
 (defn mock-client-reader [string]
   (BufferedReader. (StringReader. string)))
+(defn generate-request []
+  (def header-lines (get-header-lines (mock-client-reader full-header)))
+  (def request-fields (map-request-fields header-lines)))
+(defn generate-response []
+  (def response-body (get-response-body request-fields))
+  (def response-map (get-response-map header-lines response-body)))
+
+(defn string-contains? [pattern source]
+  (= pattern (re-find (re-pattern pattern) source)))
 
 (describe "#parse-get-request"
           (it "matches to a slash"
@@ -90,3 +99,18 @@
               (should= "text/html" (:content-type response-header)))
           (it "maps the content-length to the length of the body"
               (should= (.length response-body) (:content-length response-header))))
+
+(describe "#get-response-header"
+          (before-all (generate-request)
+                      (generate-response)
+                      (def response-header (get-response-header response-map)))
+          (it "includes the status code"
+              (should (string-contains? "HTTP/1.1 200 OK" response-header)))
+          (it "includes the host"
+              (should (string-contains? "Host: localhost:8080" response-header)))
+          (it "includes the content length"
+              (should (string-contains? "Content-Type: text/html" response-header)))
+          (it "includes the content length"
+              (should (string-contains? (str "Content-Length: " 
+                                             (:content-length response-map))
+                                        response-header))))
