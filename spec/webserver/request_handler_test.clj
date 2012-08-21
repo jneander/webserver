@@ -79,11 +79,11 @@
           (before (def response-body (get-response-body 
                                        (map-request-fields header-lines))))
           (it "includes the host name"
-              (should= "localhost\r\n" (re-find #"localhost\r\n" response-body)))
+              (should (string-contains? "<p>localhost</p>" response-body)))
           (it "includes the port"
-              (should= "8080\r\n" (re-find #"8080\r\n" response-body)))
+              (should (string-contains? "<p>8080</p>" response-body)))
           (it "includes the path"
-              (should= "/foo/bar\r\n" (re-find #"/foo/bar\r\n" response-body))))
+              (should (string-contains? "<p>/foo/bar</p>" response-body))))
 
 (describe "#get-response-map"
           (before (def client-reader (mock-client-reader full-header))

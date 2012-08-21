@@ -32,8 +32,9 @@
 
 (defn get-response-body [request-map]
   (let [[host-name host-port] (clojure.string/split (:host request-map) #":")]
-    (str host-name "\r\n" host-port "\r\n"
-         (:path request-map) "\r\n")))
+    (str "<p>" host-name "</p>"
+         "<p>" host-port "</p>"
+         "<p>" (:path request-map) "</p>")))
 
 (defn get-response-map [header-lines response-body]
   {:status 200,
