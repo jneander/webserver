@@ -46,3 +46,11 @@
        "Host: " (:host response-map) "\r\n"
        "Content-Type: " (:content-type response-map) "\r\n"
        "Content-Length: " (:content-length response-map) "\r\n"))
+
+(defn print-response [client-reader client-writer]
+  (let [header-lines (get-header-lines client-reader)
+        request-fields (map-request-fields header-lines)
+        response-body (get-response-body request-fields)
+        response-map (get-response-map header-lines response-body)
+        response-header (get-response-header response-map)]
+    (.println client-writer (str response-header "\r\n" response-body))))

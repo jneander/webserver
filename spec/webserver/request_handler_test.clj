@@ -26,8 +26,8 @@
   (def request-fields (map-request-fields header-lines)))
 (defn generate-response []
   (def response-body (get-response-body request-fields))
-  (def response-map (get-response-map header-lines response-body)))
-
+  (def response-map (get-response-map header-lines response-body))
+  (def response-header (get-response-header response-map)))
 (defn string-contains? [pattern source]
   (= pattern (re-find (re-pattern pattern) source)))
 
@@ -102,8 +102,7 @@
 
 (describe "#get-response-header"
           (before-all (generate-request)
-                      (generate-response)
-                      (def response-header (get-response-header response-map)))
+                      (generate-response))
           (it "includes the status code"
               (should (string-contains? "HTTP/1.1 200 OK" response-header)))
           (it "includes the host"
@@ -114,3 +113,14 @@
               (should (string-contains? (str "Content-Length: " 
                                              (:content-length response-map))
                                         response-header))))
+
+(describe "#print-response"
+          (before-all (def tracker (atom []))
+                      (def client-reader (mock-client-reader full-header))
+                      (def client-writer (mock-client-writer tracker))
+                      (generate-request)
+                      (generate-response)
+                      (def response (str response-header "\r\n" response-body))
+                      (print-response client-reader client-writer)) 
+          (it "merges the response header and body"
+              (should= response (some #{response} @tracker))))
