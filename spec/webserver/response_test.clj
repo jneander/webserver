@@ -6,6 +6,11 @@
 (defn- test-file-path []
   "spec/public_html")
 
+(describe "#not-found"
+  (it "returns 'not found' response"
+    (let [response (not-found)]
+      (should= 404 (:status response)))))
+
 (describe "#file-response"
   (it "returns file response map for valid file"
     (let [response (file-response "sample.txt" (test-file-path))]

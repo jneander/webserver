@@ -7,6 +7,11 @@
    :headers {}
    :body ""})
 
+(defn not-found []
+  {:status 404
+   :headers {}
+   :body ""})
+
 (defn- body [response content]
   (assoc response :body content))
 
