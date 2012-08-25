@@ -18,4 +18,5 @@
 (defn file-response [^String filepath & [^String root]]
   (let [file (File. root filepath)]
     (if (.exists file)
-      (body (ok-response) (slurp (.getCanonicalPath file))))))
+      (body (ok-response) (slurp (.getCanonicalPath file)))
+      (not-found))))

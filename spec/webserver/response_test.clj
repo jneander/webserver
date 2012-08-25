@@ -15,6 +15,6 @@
   (it "returns file response map for valid file"
     (let [response (file-response "sample.txt" (test-file-path))]
       (should= (class {}) (class response))))
-  (it "returns nil for invalid file"
+  (it "returns 'not-found' response for invalid file"
     (let [response (file-response "does-not-exist.txt" (test-file-path))]
-      (should= nil response))))
+      (should= (not-found) response))))
