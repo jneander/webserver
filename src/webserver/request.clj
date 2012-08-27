@@ -1,7 +1,7 @@
 (ns webserver.request)
 
 (defn- request-type [raw-request]
-  (re-find #"GET|PUT" raw-request))
+  (re-find #"GET|PUT|POST|HEAD" raw-request))
 
 (defn- request-path [raw-request]
   (last (re-find #" (.*) HTTP" raw-request))) 

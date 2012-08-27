@@ -15,6 +15,12 @@
       (should= "/" (:path request))
       (should= "1.1" (:http request))))
 
+  (it "maps different request types"
+    (should= "PUT" (:type (map-request "PUT / HTTP/1.1")))
+    (should= "POST" (:type (map-request "POST / HTTP/1.1")))
+    (should= "HEAD" (:type (map-request "HEAD / HTTP/1.1")))
+    )
+
   (it "maps a nested directory request"
     (let [raw-request "PUT /stuff/more/stop/ HTTP/1.0"
           request (map-request raw-request)]
