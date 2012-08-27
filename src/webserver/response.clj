@@ -23,14 +23,16 @@
   (assoc response :body content))
 
 (defn- header [response]
-  (assoc response
-         :content-length (content-length response)))
+  (assoc response :header 
+         (merge (:header response) 
+                {:content-length (content-length response)})))
 
 (defn resource-response [request-map]
-  (let [file (File. "." (:path request-map))]
-    (cond
-      (.isFile file)
-        (body (ok-response) (slurp (.getCanonicalPath file)))
-      (.isDirectory file)
-        (body (ok-response) (list-directory file))
-      :else (not-found))))
+  (let [file (File. "." (:path request-map))
+        response (cond
+                   (.isFile file)
+                     (body (ok-response) (slurp (.getCanonicalPath file)))
+                   (.isDirectory file)
+                     (body (ok-response) (list-directory file))
+                   :else (not-found))]
+    (header response)))

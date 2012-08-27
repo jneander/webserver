@@ -30,4 +30,9 @@
   (it "returns 'not found' response for invalid resource"
     (let [request {:path (str (test-file-path) "does-not-exist.txt")}
           response (resource-response request)]
-      (should= 404 (:status response)))))
+      (should= 404 (:status response))))
+  
+  (it "populates the header"
+    (let [request {:path (str (test-file-path) "sample.txt")}
+          response (resource-response request)]
+      (should= 7 (:content-length (:header response))))))
