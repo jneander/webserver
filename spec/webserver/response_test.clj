@@ -40,7 +40,10 @@
   
   (it "populates the header"
     (let [request {:http "1.1"
+                   :host "localhost:8080"
                    :path (str (test-file-path) "sample.txt")}
-          response (resource-response request)]
-      (should= 7 (:content-length (:header response)))
-      (should= "HTTP/1.1 200 OK" (:status-message (:header response))))))
+          response-header (:header (resource-response request))]
+      (should= 7 (:content-length response-header))
+      (should= "text/html" (:content-type response-header))
+      (should= (:host request) (:host response-header))
+      (should= "HTTP/1.1 200 OK" (:status-message response-header)))))

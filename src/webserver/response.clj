@@ -28,12 +28,17 @@
 (defn- content-length [response]
   (.length (:body response)))
 
+(defn- content-type [response]
+  "text/html")
+
 (defn- body [response content]
   (assoc response :body content))
 
 (defn- header [request response]
   (assoc response :header
          (merge (:header response)
+                {:host (:host request)}
+                {:content-type (content-type response)}
                 {:content-length (content-length response)}
                 {:status-message (status-message request response)})))
 
