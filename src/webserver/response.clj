@@ -19,14 +19,11 @@
 (defn- body [response content]
   (assoc response :body content))
 
-(defn file-response [^String filepath & [^String root]]
-  (let [file (File. root filepath)]
-    (if (.exists file)
-      (body (ok-response) (slurp (.getCanonicalPath file)))
-      (not-found))))
-
-(defn directory-response [^String path & [^String root]]
+(defn resource-response [^String path & [^String root]]
   (let [file (File. root path)]
-    (if (.exists file)
-      (body (ok-response) (list-directory file))
-      (not-found))))
+    (cond
+      (.isFile file)
+        (body (ok-response) (slurp (.getCanonicalPath file)))
+      (.isDirectory file)
+        (body (ok-response) (list-directory file))
+      :else (not-found))))

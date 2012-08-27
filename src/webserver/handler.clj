@@ -1,5 +1,5 @@
 (ns webserver.handler
-  (:require [webserver.response :refer [directory-response]])
+  (:require [webserver.response :refer [resource-response]])
   (:import [java.io File]))
 
 (defn- server-directory []
@@ -8,4 +8,4 @@
 (defmulti route-request :path)
 
 (defmethod route-request :default [request]
-  (directory-response (:path request) (server-directory)))
+  (resource-response (:path request) (server-directory)))
