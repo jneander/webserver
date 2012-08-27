@@ -8,4 +8,4 @@
 (defmulti route-request :path)
 
 (defmethod route-request :default [request]
-  (resource-response (:path request) (server-directory)))
+  (resource-response request))

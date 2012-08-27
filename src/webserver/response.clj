@@ -26,16 +26,7 @@
   (assoc response
          :content-length (content-length response)))
 
-(defn resource-response [^String path & [^String root]]
-  (let [file (File. root path)]
-    (cond
-      (.isFile file)
-        (body (ok-response) (slurp (.getCanonicalPath file)))
-      (.isDirectory file)
-        (body (ok-response) (list-directory file))
-      :else (not-found))))
-
-(defn res-response [request-map]
+(defn resource-response [request-map]
   (let [file (File. "." (:path request-map))]
     (cond
       (.isFile file)
