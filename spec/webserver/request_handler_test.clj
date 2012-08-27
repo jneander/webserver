@@ -31,6 +31,11 @@
 (defn string-contains? [pattern source]
   (= pattern (re-find (re-pattern pattern) source)))
 
+(describe "#read-request-header"
+  (let [header (read-request-header (mock-client-reader short-header))]
+    (it "reads up to empty line"
+      (should= "one\r\ntwo\r\n" header))))
+
 (describe "#parse-get-request"
           (it "matches to a slash"
             (should= "/" (parse-get-request "GET / HTTP/1.1")))

@@ -1,4 +1,12 @@
-(ns webserver.request-handler)
+(ns webserver.request-handler
+  (:require [webserver.request :refer [map-request]]
+            [webserver.response :refer [resource-response]]))
+
+(defn read-request-header [client-reader]
+  (loop [header "" line (.readLine client-reader)]
+    (if (< 0 (.length line))
+      (recur (str header line "\r\n") (.readLine client-reader))
+      header)))
 
 (defn parse-get-request [string]
   ((fn [string] (if (not (nil? string)) (last string)))
@@ -27,8 +35,7 @@
       (.println client-writer path))))
 
 (defn map-request-fields [header-lines]
-  {:host (get-host header-lines),
-   :path (parse-get-request (first header-lines))})
+  (map-request (clojure.string/join "\r\n"  header-lines)))
 
 (defn get-response-body [request-map]
   (let [[host-name host-port] (clojure.string/split (:host request-map) #":")]
