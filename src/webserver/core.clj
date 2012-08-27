@@ -1,6 +1,7 @@
 (ns webserver.core
-  (:use (webserver socket-connection
-                   request-handler)))
+  (:require [webserver.socket-connection 
+             :refer [open-server-socket listen-and-respond]]
+            [webserver.handler :refer [print-response]]))
 
 (defn -main [& args]
   (let [port (if (empty? args) 8080 (read-string (first args)))

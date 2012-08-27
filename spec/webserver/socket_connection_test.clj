@@ -1,9 +1,8 @@
 (ns webserver.socket-connection-test
-  (:use speclj.core
-        (webserver socket-connection
-                   request-handler))
-  (:import (java.io BufferedReader OutputStream PrintStream)
-           (java.net ServerSocket Socket)))
+  (:require [speclj.core :refer [describe it should= should before after]]
+        [webserver.socket-connection :refer :all])
+  (:import [java.io BufferedReader OutputStream PrintStream]
+           [java.net ServerSocket Socket]))
 
 (defn reset-tracker[]
   (def tracker (atom [])))
