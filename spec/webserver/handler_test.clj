@@ -40,9 +40,14 @@
   (= pattern (re-find (re-pattern pattern) source)))
 
 (describe "#route-request"
+
   (it "sends directory requests to directory-response"
     (let [response (route-request (request "/sample_directory"))]
-      (should= "<p>file3.txt</p>" (:body response)))))
+      (should= "<p>file3.txt</p>" (:body response))))
+  
+  (it "routes '/form' to an ok-response"
+    (let [response (route-request (request "/form"))]
+      (should= 200 (:status response)))))
 
 (describe "#print-response"
 

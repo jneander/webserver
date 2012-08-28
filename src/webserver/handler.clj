@@ -1,6 +1,7 @@
 (ns webserver.handler
   (:require [webserver.request :refer [map-request]]
-            [webserver.response :refer [resource-response]]
+            [webserver.response :refer [resource-response
+                                        ok-response]]
             [clojure.string :refer [join]])
   (:import [java.io File]))
 
