@@ -42,12 +42,14 @@
                 {:content-length (content-length response)}
                 {:status-message (status-message request response)})))
 
-(defn resource-response [request-map]
-  (let [file (File. "." (:path request-map))
-        response (cond
-                   (.isFile file)
-                     (body (ok-response) (slurp (.getCanonicalPath file)))
-                   (.isDirectory file)
-                     (body (ok-response) (list-directory file))
-                   :else (not-found))]
-    (header request-map response)))
+(defn resource-response 
+  ([request-map] (resource-response request-map "."))
+  ([request-map directory]
+   (let [file (File. directory (:path request-map))
+         response (cond
+                    (.isFile file)
+                      (body (ok-response) (slurp (.getCanonicalPath file)))
+                    (.isDirectory file)
+                      (body (ok-response) (list-directory file))
+                    :else (not-found))]
+     (header request-map response))))
