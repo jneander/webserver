@@ -1,4 +1,5 @@
 (ns webserver.response
+  (:require [clojure.string :refer [join]])
   (:import [java.io File]))
 
 (defn- status-codes []
@@ -33,7 +34,7 @@
 (defn- body [response content]
   (assoc response :body content))
 
-(defn- header [request response]
+(defn- header [response request]
   (assoc response :header
          (merge (:header response)
                 {:host (:host request)}
@@ -42,19 +43,28 @@
                 {:status-message (status-message request response)})))
 
 (defn resource-response 
-  ([request-map] (resource-response request-map "."))
-  ([request-map directory]
-   (let [file (File. directory (:path request-map))
-         response (cond
-                    (.isFile file)
-                      (body (ok-response) (slurp (.getCanonicalPath file)))
-                    (.isDirectory file)
-                      (body (ok-response) (list-directory file))
-                    :else (not-found))]
-     (header request-map response))))
+  [request-map directory]
+  (let [file (File. directory (:path request-map))
+        response (cond
+                   (.isFile file)
+                   (body (ok-response) (slurp (.getCanonicalPath file)))
+                   (.isDirectory file)
+                   (body (ok-response) (list-directory file))
+                   :else (not-found))]
+    (header response request-map)))
 
 (defn echo-response [request-map directory]
-  (let [response (ok-response)]
-    (header request-map (assoc response 
-                   :body (str (:host request-map) 
-                              (:path request-map))))))
+  (-> (ok-response)
+    (body (str (:host request-map) (:path request-map)))
+    (header request-map)))
+
+(defn echo-query-response [request directory]
+  (let [response (ok-response)
+        query (clojure.string/split (:path request) #"\?")
+        separated (clojure.string/split (last query) #"&")
+        pairs (map (fn [x] (clojure.string/split x #"=")) separated)
+        mapped (into {} pairs)
+        formatted (map (fn [x] (str (key x) " = " (val x))) mapped)]
+    (-> response
+      (body (join "\r\n" formatted))
+      (header request))))

@@ -1,8 +1,9 @@
 (ns webserver.handler
   (:require [webserver.request :refer [map-request]]
             [webserver.response :refer [resource-response
-                                        echo-response]]
-            [clojure.string :refer [join]])
+                                        echo-response
+                                        echo-query-response]]
+            [clojure.string :refer [join split]])
   (:import [java.io File]))
 
 (defn- line-ending [] "\r\n")
@@ -10,10 +11,16 @@
 (defn- server-directory []
   (.getCanonicalPath (File. ".")))
 
-(defmulti route-request :path)
+(defn- get-route [request]
+  (first (split (:path request) #"\?")))
+
+(defmulti route-request get-route)
 
 (defmethod route-request "/form" [request]
   (echo-response request (:directory request)))
+
+(defmethod route-request "/some-script-url" [request]
+  (echo-query-response request (:directory request)))
 
 (defmethod route-request :default [request]
   (resource-response request (:directory request)))
