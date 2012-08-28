@@ -45,17 +45,15 @@
       (should= "<p>file3.txt</p>" (:body response)))))
 
 (describe "#print-response"
-  (let [output-tracker (track-request (sample-request-header "sample.txt"))
-        output (last @output-tracker)]
-    (it "includes the status code"
-      (should (string-contains? "HTTP/1.1 200 OK" output)))
-    (it "includes the host"
-      (should (string-contains? "Host: localhost:8080" output)))
-    (it "includes the content type"
-      (should (string-contains? "Content-Type: text/html" output)))
-    (it "includes the content length"
+
+  (it "includes header information"
+    (let [output-tracker (track-request (sample-request-header "sample.txt"))
+          output (last @output-tracker)]
+      (should (string-contains? "HTTP/1.1 200 OK" output))
+      (should (string-contains? "Host: localhost:8080" output))
+      (should (string-contains? "Content-Type: text/html" output))
       (should (string-contains? "Content-Length: 7" output))))
 
-  (let [output-tracker (track-request (sample-request-header "sample.txt"))]
-    (it "merges the response header and body"
+  (it "merges the response header and body"
+    (let [output-tracker (track-request (sample-request-header "sample.txt"))]
       (should= (sample-request-output) (last @output-tracker)))))
