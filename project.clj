@@ -3,8 +3,8 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.4.0"]
-                 [speclj "2.1.2"]]
-  :plugins [[speclj "2.1.2"]]
+  :dependencies [[org.clojure/clojure "1.4.0"]]
+  :plugins [[speclj "2.3.0"]]
+  :profiles {:dev {:dependencies [[speclj "2.3.0"]]}}
   :test-paths ["spec/"]
-  :main webserver.core)
+  :main ^:skip-aot webserver.core)
