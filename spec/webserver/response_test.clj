@@ -54,3 +54,11 @@
       (should= "text/html" (:content-type response-header))
       (should= (:host request) (:host response-header))
       (should= "HTTP/1.1 200 OK" (:status-message response-header)))))
+
+(describe "#echo-response"
+
+  (it "returns the request in the body"
+    (let [request {:path "/foo" :host "localhost:8080"}
+          response (echo-response request ".")]
+      (should= "localhost:8080/foo" (:body response)))))
+

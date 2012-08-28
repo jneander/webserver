@@ -1,6 +1,7 @@
 (ns webserver.handler
   (:require [webserver.request :refer [map-request]]
-            [webserver.response :refer [resource-response]]
+            [webserver.response :refer [resource-response
+                                        echo-response]]
             [clojure.string :refer [join]])
   (:import [java.io File]))
 
@@ -11,8 +12,11 @@
 
 (defmulti route-request :path)
 
+(defmethod route-request "/form" [request]
+  (echo-response request (:directory request)))
+
 (defmethod route-request :default [request]
-  (resource-response request))
+  (resource-response request (:directory request)))
 
 (defn- read-request-header [client-reader]
   (loop [header "" line (.readLine client-reader)]
@@ -29,8 +33,9 @@
          (str "Content-Length: " (:content-length header-map) (line-ending))])))
 
 (defn print-response [client-reader client-writer directory]
-  (let [request (map-request (read-request-header client-reader))
-        response (resource-response request directory)]
+  (let [request (assoc (map-request (read-request-header client-reader))
+                       :directory directory)
+        response (route-request request)]
     (.println client-writer
               (str (flatten-header response)
                    (line-ending)

@@ -1,6 +1,5 @@
 (ns webserver.response
-  (:import [java.io File]
-           [java.lang String]))
+  (:import [java.io File]))
 
 (defn- status-codes []
   {200 "OK"
@@ -10,7 +9,7 @@
   (let [list (into [] (.list directory))]
     (clojure.string/join (map (fn [body] (str "<p>" body "</p>")) list))))
 
-(defn- ok-response []
+(defn ok-response []
   {:status 200
    :header {}
    :body ""})
@@ -53,3 +52,9 @@
                       (body (ok-response) (list-directory file))
                     :else (not-found))]
      (header request-map response))))
+
+(defn echo-response [request-map directory]
+  (let [response (ok-response)]
+    (header request-map (assoc response 
+                   :body (str (:host request-map) 
+                              (:path request-map))))))
