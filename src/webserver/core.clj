@@ -10,7 +10,6 @@
 
 (defn -main [& args]
   (let [arg-map (parse-arguments args)
-        port (if (empty? args) 8080 (read-string (first args)))
-        server-socket (open-server-socket port)]
+        server-socket (open-server-socket (:port arg-map))]
     (while (not (.isClosed server-socket))
-      (listen-and-respond server-socket print-response))))
+      (listen-and-respond server-socket print-response (:directory arg-map)))))

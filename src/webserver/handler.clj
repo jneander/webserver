@@ -28,9 +28,9 @@
          (str "Content-Type: " (:content-type header-map))
          (str "Content-Length: " (:content-length header-map) (line-ending))])))
 
-(defn print-response [client-reader client-writer]
+(defn print-response [client-reader client-writer directory]
   (let [request (map-request (read-request-header client-reader))
-        response (resource-response request)]
+        response (resource-response request directory)]
     (.println client-writer
               (str (flatten-header response)
                    (line-ending)

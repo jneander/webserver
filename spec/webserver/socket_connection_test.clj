@@ -13,7 +13,7 @@
   (def client-output-mock
     (proxy [java.io.ByteArrayOutputStream] [])))
 
-(defn echo [client-reader client-writer]
+(defn echo [client-reader client-writer & directory]
   (swap! tracker conj client-reader client-writer)
   (.println client-writer (.readLine client-reader)))
 
@@ -69,7 +69,7 @@
                   (mock-client-streams)
                   (mock-client-socket)
                   (def server-socket (mock-server-socket 8080))
-                  (listen-and-respond server-socket echo))
+                  (listen-and-respond server-socket echo "."))
           (after (.close server-socket))
           (it "connects with and closes client socket"
               (should (.isClosed client-socket-mock)))

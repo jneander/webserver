@@ -33,7 +33,7 @@
   (let [output-tracker (tracker)
         client-reader (mock-client-reader request)
         client-writer (mock-client-writer output-tracker)]
-    (print-response client-reader client-writer)
+    (print-response client-reader client-writer ".")
     output-tracker))
 
 (defn- string-contains? [pattern source]
