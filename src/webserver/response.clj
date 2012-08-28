@@ -1,5 +1,5 @@
 (ns webserver.response
-  (:require [clojure.string :refer [join]])
+  (:require [clojure.string :refer [join split]])
   (:import [java.io File]))
 
 (defn- status-codes []
@@ -42,6 +42,12 @@
                 {:content-length (content-length response)}
                 {:status-message (status-message request response)})))
 
+(defn- map-query-string [query]
+  (let [query (last (split query #"\?"))
+        sections (split query #"&")
+        pairs (map (fn [x] (split x #"=")) sections)]
+    (into {} pairs)))
+
 (defn resource-response 
   [request-map directory]
   (let [file (File. directory (:path request-map))
@@ -60,11 +66,9 @@
 
 (defn echo-query-response [request directory]
   (let [response (ok-response)
-        query (clojure.string/split (:path request) #"\?")
-        separated (clojure.string/split (last query) #"&")
-        pairs (map (fn [x] (clojure.string/split x #"=")) separated)
-        mapped (into {} pairs)
-        formatted (map (fn [x] (str (key x) " = " (val x))) mapped)]
+        mapped-query (map-query-string (:path request))
+        formatter (fn [x] (str (key x) " = " (val x)))
+        formatted (map formatter mapped-query)]
     (-> response
       (body (join "\r\n" formatted))
       (header request))))
