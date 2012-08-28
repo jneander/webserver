@@ -16,7 +16,7 @@
 
 (defn- read-request-header [client-reader]
   (loop [header "" line (.readLine client-reader)]
-    (if (< 0 (.length line))
+    (if (and line (< 0 (.length line)))
       (recur (str header line (line-ending)) (.readLine client-reader))
       header)))
 
