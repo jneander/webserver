@@ -69,7 +69,8 @@
                   (mock-client-streams)
                   (mock-client-socket)
                   (def server-socket (mock-server-socket 8080))
-                  (listen-and-respond server-socket echo "."))
+                  (listen-and-respond server-socket echo ".")
+                  (Thread/sleep 1))
           (after (.close server-socket))
           (it "connects with and closes client socket"
               (should (.isClosed client-socket-mock)))

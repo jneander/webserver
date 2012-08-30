@@ -26,6 +26,7 @@
   (resource-response request (:directory request)))
 
 (defn- read-request-header [client-reader]
+  (while (not (.ready client-reader)) (Thread/sleep 1))
   (loop [header "" line (.readLine client-reader)]
     (if (and line (< 0 (.length line)))
       (recur (str header line (line-ending)) (.readLine client-reader))
