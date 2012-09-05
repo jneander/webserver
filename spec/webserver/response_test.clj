@@ -1,10 +1,8 @@
 (ns webserver.response-test
   (:require [webserver.response :refer :all]
+            [webserver.spec-helper :refer [should-contain]]
             [speclj.core :refer [describe it should= should]])
   (:import [java.io File]))
-
-(defn- string-contains? [match target]
-  (= match (re-find (re-pattern match) target)))
 
 (defn- test-file-path [file]
   (str "spec/public_html/" file))
@@ -22,21 +20,33 @@
       (should= 200 (:status response))
       (should= "foobar\n" (:body response))))
 
+  (it "prefixes root-level links with single slashes"
+    (let [request {:path "/"}
+          response (resource-response request ".")
+          expected "href=\"/spec\""]
+      (should-contain expected (:body response))))
+
   (it "returns a list of directory contents for valid directory"
     (let [request {:path (test-file-path "")}
           response (resource-response request ".")
-          dir-list (str "<p>file1.txt</p><p>file2.txt</p>"
-                        "<p>sample.txt</p><p>sample_directory</p>")]
+          files ["file1.txt" "file2.txt" "sample.txt" "sample_directory"]]
       (should= 200 (:status response))
-      (should (string-contains? "OK" (:status-message (:header response))))
-      (should= dir-list (:body response))))
+      (doseq [filename files] 
+        (should-contain filename (:body response)))))
+
+  (it "returns a list of directory contents for nested directory"
+    (let [request {:path (test-file-path "sample_directory")}
+          response (resource-response request ".")
+          expected (str "<p><a href=\"/"
+                        (:path request) "/sample.txt\">"
+                        "sample.txt</a></p>")]
+      (should= expected (:body response))))
 
   (it "returns 'not found' response for invalid resource"
     (let [request {:path (str (test-file-path "does-not-exist.txt"))}
           response (resource-response request ".")]
       (should= 404 (:status response))
-      (should (string-contains? "Not Found" 
-                                (:status-message (:header response))))))
+      (should-contain "Not Found" (:status-message (:header response)))))
 
   (it "uses provided directory"
     (let [request {:path (test-file-path "sample.txt")}]

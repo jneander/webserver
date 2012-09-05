@@ -1,5 +1,6 @@
 (ns webserver.handler-test
   (:require [webserver.handler :refer :all]
+            [webserver.spec-helper :refer [should-contain]]
             [speclj.core :refer [describe it should= should]])
   (:import [java.io BufferedReader StringReader PrintStream OutputStream]))
 
@@ -37,14 +38,13 @@
     (print-response client-reader client-writer directory)
     output-tracker))
 
-(defn- string-contains? [pattern source]
-  (= pattern (re-find (re-pattern pattern) source)))
-
 (describe "#route-request"
 
   (it "sends directory requests to directory-response"
     (let [response (route-request (request "/sample_directory"))]
-      (should= "<p>sample.txt</p>" (:body response))))
+      (should= (str "<p><a href=\"/spec/public_html/sample_directory/"
+                    "sample.txt\">sample.txt</a></p>")
+               (:body response))))
   
   (it "routes '/form' to ok-response"
     (let [response (route-request {:path "/form"})]
@@ -55,10 +55,10 @@
   (it "includes header information"
     (let [output-tracker (track-request (sample-request-header "sample.txt") ".")
           output (last @output-tracker)]
-      (should (string-contains? "HTTP/1.1 200 OK" output))
-      (should (string-contains? "Host: localhost:8080" output))
-      (should (string-contains? "Content-Type: text/html" output))
-      (should (string-contains? "Content-Length: 7" output))))
+      (should-contain "HTTP/1.1 200 OK" output)
+      (should-contain "Host: localhost:8080" output)
+      (should-contain "Content-Type: text/html" output)
+      (should-contain "Content-Length: 7" output)))
 
   (it "merges the response header and body"
     (let [output-tracker (track-request (sample-request-header "sample.txt") ".")]
@@ -70,4 +70,4 @@
           output-tracker (track-request request-header 
                                         "./spec/public_html/sample_directory")
           output (last @output-tracker)]
-      (should (string-contains? "otherfoobar" output)))))
+      (should-contain "otherfoobar" output))))
