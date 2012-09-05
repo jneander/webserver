@@ -1,7 +1,8 @@
 (ns webserver.core
   (:require [webserver.socket-connection 
              :refer [open-server-socket listen-and-respond]]
-            [webserver.handler :refer [print-response]]))
+            [webserver.handler :refer [print-response]])
+  (:gen-class :main true))
 
 (defn parse-arguments [args]
   (let [mapped (apply hash-map args)]
