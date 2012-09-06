@@ -6,17 +6,18 @@
   {200 "OK"
    404 "Not Found"})
 
-(defn to-list-item [item path] 
-  (str "<p><a href=\"" path item "\">" item "</a></p>"))
+(defn- to-link [path name]
+  (str "<a href=\"" path name "\">" name "</a>"))
 
-(defn clean-path [directory]
-  (let [path (last (re-find #"^[.]?(.*)/?" (.getPath directory)))]
-    (str path (if-not (= "/" path) "/"))))
+(defn- proper-path [path]
+  (let [clean (last (re-find #"^[.]*(.*\w)" path))]
+    (str clean (if-not (= "/" clean) "/"))))
 
-(defn- list-directory [^File directory]
-  (let [list (into [] (.list directory))
-        listify (fn [item] (to-list-item item (clean-path directory)))]
-    (clojure.string/join (map listify list))))
+(defn- list-directory [request]
+  (let [file (File. (:directory request) (:path request))
+        list (into [] (.list file))
+        path (proper-path (:path request))]
+    (join (map #(str "<p>" (to-link path %) "</p>") list))))
 
 (defn ok-response []
   {:status 200
@@ -66,7 +67,7 @@
                    (.isFile file)
                    (body (ok-response) (read-file file))
                    (.isDirectory file)
-                   (body (ok-response) (list-directory file))
+                   (body (ok-response) (list-directory request-map))
                    :else (not-found))]
     (header response request-map)))
 

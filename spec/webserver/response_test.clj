@@ -5,7 +5,7 @@
   (:import [java.io File]))
 
 (defn- test-file-path [file]
-  (str "spec/public_html/" file))
+  (str "/spec/public_html/" file))
 
 (describe "#not-found"
   (it "returns 'not found' response"
@@ -39,7 +39,7 @@
     (let [request {:path (test-file-path "sample_directory")
                    :directory "."}
           response (resource-response request)
-          expected (str "<p><a href=\"/"
+          expected (str "<p><a href=\""
                         (:path request) "/sample.txt\">"
                         "sample.txt</a></p>")]
       (should= expected (:body response))))
