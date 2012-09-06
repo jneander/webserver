@@ -48,3 +48,25 @@
               (str (flatten-header response)
                    (line-ending)
                    (:body response)))))
+
+(defn open-string-reader [client]
+  (java.io.BufferedReader. 
+    (java.io.InputStreamReader.
+      (.getInputStream client))))
+
+(defn open-string-writer [client]
+  (java.io.PrintStream.
+    (.getOutputStream client)))
+
+(defn- parse-request [client]
+  (with-open [input (open-string-reader client)]
+    (map-request (read-request-header input))))
+
+(defn route-response [client directory]
+  (let [output (open-string-writer client)
+        request (assoc (parse-request client) :directory directory)
+        response (route-request request)]
+    (.println output 
+              (str (flatten-header response)
+                   (line-ending)
+                   (:body response)))))
