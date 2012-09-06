@@ -56,23 +56,26 @@
         pairs (map (fn [x] (split x #"=")) sections)]
     (into {} pairs)))
 
+(defn- read-file [file]
+  (slurp (.getCanonicalPath file)))
+
 (defn resource-response 
-  [request-map directory]
-  (let [file (File. directory (:path request-map))
+  [request-map]
+  (let [file (File. (:directory request-map) (:path request-map))
         response (cond
                    (.isFile file)
-                   (body (ok-response) (slurp (.getCanonicalPath file)))
+                   (body (ok-response) (read-file file))
                    (.isDirectory file)
                    (body (ok-response) (list-directory file))
                    :else (not-found))]
     (header response request-map)))
 
-(defn echo-response [request-map directory]
+(defn echo-response [request-map]
   (-> (ok-response)
     (body (str (:host request-map) (:path request-map)))
     (header request-map)))
 
-(defn echo-query-response [request directory]
+(defn echo-query-response [request]
   (let [response (ok-response)
         mapped-query (map-query-string (:path request))
         formatter (fn [x] (str (key x) " = " (val x)))

@@ -17,13 +17,13 @@
 (defmulti route-request get-route)
 
 (defmethod route-request "/form" [request]
-  (echo-response request (:directory request)))
+  (echo-response request))
 
 (defmethod route-request "/some-script-url" [request]
-  (echo-query-response request (:directory request)))
+  (echo-query-response request))
 
 (defmethod route-request :default [request]
-  (resource-response request (:directory request)))
+  (resource-response request))
 
 (defn- read-request-header [client-reader]
   (while (not (.ready client-reader)) (Thread/sleep 1))
