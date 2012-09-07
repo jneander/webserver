@@ -10,20 +10,10 @@
 (defn connect-client-socket [server-socket]
   (.accept server-socket))
 
-(defn open-client-writer [client-socket]
-  (PrintStream. (.getOutputStream client-socket)))
+(defn- run-client-service [client service directory]
+  (service client directory)
+  (.close client))
 
-(defn open-client-reader [client-socket]
-  (BufferedReader. 
-    (InputStreamReader. 
-      (.getInputStream client-socket))))
-
-(defn- run-client-service [client-socket service directory]
-  (with-open [client-reader (open-client-reader client-socket)
-              client-writer (open-client-writer client-socket)]
-    (service client-reader client-writer directory)
-    (.close client-socket)))
-
-(defn listen-and-respond [server-socket service directory]
-  (let [client-socket (connect-client-socket server-socket)]
-    (.start (Thread. #(run-client-service client-socket service directory)))))
+(defn listen-and-respond [server service directory]
+  (let [client (connect-client-socket server)]
+    (.start (Thread. #(run-client-service client service directory)))))

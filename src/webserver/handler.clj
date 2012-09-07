@@ -8,9 +8,6 @@
 
 (defn- line-ending [] "\r\n")
 
-(defn- server-directory []
-  (.getCanonicalPath (File. ".")))
-
 (defn- get-route [request]
   (first (split (:path request) #"\?")))
 
@@ -40,15 +37,6 @@
          (str "Content-Type: " (:content-type header-map))
          (str "Content-Length: " (:content-length header-map) (line-ending))])))
 
-(defn print-response [client-reader client-writer directory]
-  (let [request (assoc (map-request (read-request-header client-reader))
-                       :directory directory)
-        response (route-request request)]
-    (.println client-writer
-              (str (flatten-header response)
-                   (line-ending)
-                   (:body response)))))
-
 (defn open-string-reader [client]
   (java.io.BufferedReader. 
     (java.io.InputStreamReader.
@@ -59,14 +47,14 @@
     (.getOutputStream client)))
 
 (defn- parse-request [client]
-  (with-open [input (open-string-reader client)]
+  (let [input (open-string-reader client)]
     (map-request (read-request-header input))))
 
 (defn route-response [client directory]
-  (let [output (open-string-writer client)
-        request (assoc (parse-request client) :directory directory)
-        response (route-request request)]
-    (.println output 
-              (str (flatten-header response)
-                   (line-ending)
-                   (:body response)))))
+  (let [request (assoc (parse-request client) :directory directory)
+        response (route-request request)
+        statement (str (flatten-header response)
+                       (line-ending)
+                       (:body response))]
+    (with-open [output (open-string-writer client)]
+      (.println output statement))))

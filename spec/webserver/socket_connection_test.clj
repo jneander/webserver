@@ -4,77 +4,53 @@
   (:import [java.io BufferedReader OutputStream PrintStream]
            [java.net ServerSocket Socket]))
 
-(defn reset-tracker[]
-  (def tracker (atom [])))
+(let [echo-tracker (atom [])]
+  (defn- echo [client directory]
+    (swap! echo-tracker conj client directory))
+  (defn- get-echo [] @echo-tracker)
+  (defn- reset-echo [] (reset! echo-tracker [])))
 
-(defn mock-client-streams []
-  (def client-input-mock
-    (proxy [java.io.StringBufferInputStream] ["test-input"]))
-  (def client-output-mock
-    (proxy [java.io.ByteArrayOutputStream] [])))
-
-(defn echo [client-reader client-writer & directory]
-  (swap! tracker conj client-reader client-writer)
-  (.println client-writer (.readLine client-reader)))
-
-(defn mock-client-socket []
-  (mock-client-streams)
-  (def client-socket-mock
-    (proxy [Socket] [] 
-      (getOutputStream [] client-output-mock)
-      (getInputStream [] client-input-mock))))
-
-(defn mock-server-socket [port]
-  (proxy [ServerSocket] [port]
-    (accept [] client-socket-mock)))
+(let [client-input (proxy [java.io.StringBufferInputStream] ["test-input"])
+      client-output (proxy [java.io.ByteArrayOutputStream] [])
+      client (proxy [Socket] []
+               (getInputStream [] client-input)
+               (getOutputStream [] client-output))]
+  (defn mock-server [port]
+    (proxy [ServerSocket] [port]
+      (accept [] client))))
 
 (describe "#open-server-socket"
-          (before (def socket (open-server-socket 8080)))
-          (after (.close socket))
-          (it "returns a ServerSocket instance"
-              (should= (.getClass socket) ServerSocket))
-          (it "uses the provided port"
-              (should= (.getLocalPort socket) 8080)))
+  
+  (with-open [socket (open-server-socket 8080)]
+    (it "returns a ServerSocket instance"
+      (should= ServerSocket (class socket))))
+
+  (with-open [socket (open-server-socket 8080)]
+    (it "uses the provided port"
+      (should= 8080 (.getLocalPort socket)))))
 
 (describe "#connect-client-socket"
-          (before (def server-socket (mock-server-socket 8080))
-                  (mock-client-socket)
-                  (def client-socket (connect-client-socket server-socket)))
-          (after (.close server-socket)
-                 (.close client-socket))
-          (it "connects the client and server sockets"
-              (should= client-socket-mock client-socket)))
 
-(describe "#open-client-writer"
-          (before (mock-client-streams)
-                  (def output-stream (open-client-writer client-socket-mock)))
-          (after (.close output-stream))
-          (it "returns a PrintStream instance"
-              (should= PrintStream (class output-stream)))
-          (it "links the PrintStream to the client socket"
-              (.print output-stream "test-output")
-              (should= "test-output" (.toString client-output-mock))))
+  (with-open [server (mock-server 8080)
+              client (.accept server)]
+    (it "connects the client and server sockets"
+      (should= client (connect-client-socket server)))))
 
-(describe "#open-client-reader"
-          (before (mock-client-streams)
-                  (def input-stream (open-client-reader client-socket-mock)))
-          (after (.close input-stream))
-          (it "returns an BufferedReader instance"
-              (should= BufferedReader (class input-stream)))
-          (it "links the BufferedReader to the client socket"
-              (should= "test-input" (.readLine input-stream))))
+(describe "listen-and-respond"
 
-(describe "#listen-and-respond"
-          (before (reset-tracker)
-                  (mock-client-streams)
-                  (mock-client-socket)
-                  (def server-socket (mock-server-socket 8080))
-                  (listen-and-respond server-socket echo ".")
-                  (Thread/sleep 1))
-          (after (.close server-socket))
-          (it "connects with and closes client socket"
-              (should (.isClosed client-socket-mock)))
-          (it "passes a client reader/writer to the service"
-              (should= BufferedReader (class (first @tracker)))
-              (should= PrintStream (class (second @tracker)))
-              (should= "test-input\n" (.toString client-output-mock))))
+  (with-open [server (mock-server 8080)
+              client (.accept server)]
+    (listen-and-respond server echo ".")
+    (Thread/sleep 1)
+
+    (it "passes the client and directory to the service"
+      (should= client (first (get-echo)))
+      (should= "." (second (get-echo)))))
+
+  (with-open [server (mock-server 8080)
+              client (.accept server)]
+    (listen-and-respond server echo ".")
+    (Thread/sleep 1)
+
+    (it "connects with and closes the client socket"
+      (should (.isClosed client)))))
