@@ -3,6 +3,8 @@
             [webserver.response :refer [resource-response
                                         echo-response
                                         echo-query-response]]
+            [webserver.io :refer [open-string-reader
+                                  open-string-writer]]
             [clojure.string :refer [join split]])
   (:import [java.io File]))
 
@@ -36,15 +38,6 @@
          (str "Host: " (:host header-map))
          (str "Content-Type: " (:content-type header-map))
          (str "Content-Length: " (:content-length header-map) (line-ending))])))
-
-(defn open-string-reader [client]
-  (java.io.BufferedReader. 
-    (java.io.InputStreamReader.
-      (.getInputStream client))))
-
-(defn open-string-writer [client]
-  (java.io.PrintStream.
-    (.getOutputStream client)))
 
 (defn- parse-request [client]
   (let [input (open-string-reader client)]

@@ -69,21 +69,3 @@
     (let [output (route-response-output "/sample.txt"
                                         "./spec/public_html/sample_directory")]
       (should-contain "otherfoobar" output))))
-
-(describe "#open-string-reader"
-
-  (it "returns a BufferedReader connected to the client"
-    (with-open [client (mock-client-socket)
-                reader (open-string-reader client)]
-      (should= BufferedReader (class reader))
-      (should= "test-input" (.readLine reader)))))
-
-(describe "#open-string-writer"
-
-  (it "returns a PrintStream connected to the client"
-    (with-open [client (mock-client-socket)
-                writer (open-string-writer client)]
-      (reset-client-output)
-      (should= PrintStream (class writer))
-      (.print writer "test-output")
-      (should= "test-output" (.toString (.getOutputStream client))))))
