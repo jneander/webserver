@@ -18,15 +18,11 @@
   (defn- reset-client-output []
     (.reset client-output-stream)))
 
-(defn- request [path]
-  {:type "GET" :path (str "/spec/public_html" path) 
-   :http "1.1" :directory "."})
-
-(defn- sample-request-header [path]
+(defn- stub-request-header [path]
   (str "GET " path " HTTP/1.1\r\n"
        "Host: localhost:8080\r\n\r\n"))
 
-(defn- mock-response-map []
+(defn- stub-response-map []
   {:status 200
    :header {:status-message "HTTP/1.1 200 OK"
             :host "localhost:8080"
@@ -34,7 +30,7 @@
             :content-length 7}
    :body "foobar"})
 
-(defn- sample-request-output []
+(defn- stub-request-output []
   (str "HTTP/1.1 200 OK\r\n"
        "Host: localhost:8080\r\n"
        "Content-Type: text/html\r\n"
@@ -43,22 +39,10 @@
        "foobar\n"))
 
 (defn- route-response-output [path directory]
-  (let [request (sample-request-header path)
+  (let [request (stub-request-header path)
         client (mock-client-request request)
         __ (route-response client directory)]
     (.toString (.getOutputStream (mock-client-socket)))))
-
-(describe "#route-request"
-
-  (it "sends directory requests to directory-response"
-    (let [response (route-request (request "/sample_directory"))]
-      (should= (str "<p><a href=\"/spec/public_html/sample_directory/"
-                    "sample.txt\">sample.txt</a></p>")
-               (:body response))))
-
-  (it "routes '/form' to ok-response"
-    (let [response (route-request {:path "/form"})]
-      (should= 200 (:status response)))))
 
 (describe "#route-response"
 
@@ -71,7 +55,7 @@
 
   (it "merges the response header and body"
     (let [output (route-response-output "/spec/public_html/sample.txt" ".")]
-      (should-contain (sample-request-output) output)))
+      (should-contain (stub-request-output) output)))
 
   (it "uses the directory to serve as root"
     (let [output (route-response-output "/sample.txt"

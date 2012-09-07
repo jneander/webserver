@@ -1,28 +1,12 @@
 (ns webserver.handler
   (:require [webserver.request :refer [map-request]]
-            [webserver.response :refer [resource-response
-                                        echo-response
-                                        echo-query-response]]
+            [webserver.router :refer [route-request]]
             [webserver.io :refer [open-string-reader
                                   open-string-writer]]
             [clojure.string :refer [join split]])
   (:import [java.io File]))
 
 (defn- line-ending [] "\r\n")
-
-(defn- get-route [request]
-  (first (split (:path request) #"\?")))
-
-(defmulti route-request get-route)
-
-(defmethod route-request "/form" [request]
-  (echo-response request))
-
-(defmethod route-request "/some-script-url" [request]
-  (echo-query-response request))
-
-(defmethod route-request :default [request]
-  (resource-response request))
 
 (defn- read-request-header [client-reader]
   (while (not (.ready client-reader)) (Thread/sleep 1))
