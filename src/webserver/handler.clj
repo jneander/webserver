@@ -39,15 +39,27 @@
          (str "Content-Type: " (:content-type header-map))
          (str "Content-Length: " (:content-length header-map) (line-ending))])))
 
+(defn- flatten-response [response]
+  {:body-type :text
+   :header (flatten-header response)
+   :body (:body response)})
+
 (defn- parse-request [client]
   (let [input (open-string-reader client)]
     (map-request (read-request-header input))))
 
+(defn- get-data-type [socket {type :body-type}] type)
+
+(defmulti submit-response get-data-type)
+
+(defmethod submit-response :default [socket response]
+  (let [output (open-string-writer socket)]
+    (.println output (str (:header response)
+                          (line-ending)
+                          (:body response)))))
+
 (defn route-response [client directory]
   (let [request (assoc (parse-request client) :directory directory)
-        response (route-request request)
-        statement (str (flatten-header response)
-                       (line-ending)
-                       (:body response))]
-    (with-open [output (open-string-writer client)]
-      (.println output statement))))
+        response (flatten-response (route-request request))]
+    (println response)
+    (submit-response client response)))

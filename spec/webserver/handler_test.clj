@@ -26,6 +26,14 @@
   (str "GET " path " HTTP/1.1\r\n"
        "Host: localhost:8080\r\n\r\n"))
 
+(defn- mock-response-map []
+  {:status 200
+   :header {:status-message "HTTP/1.1 200 OK"
+            :host "localhost:8080"
+            :content-type "text/html"
+            :content-length 7}
+   :body "foobar"})
+
 (defn- sample-request-output []
   (str "HTTP/1.1 200 OK\r\n"
        "Host: localhost:8080\r\n"
