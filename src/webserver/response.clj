@@ -1,5 +1,6 @@
 (ns webserver.response
-  (:require [clojure.string :refer [join split]])
+  (:require [webserver.io :refer [read-file]]
+            [clojure.string :refer [join split]])
   (:import [java.io File]))
 
 (defn- status-codes []
@@ -56,9 +57,6 @@
         sections (split query #"&")
         pairs (map (fn [x] (split x #"=")) sections)]
     (into {} pairs)))
-
-(defn- read-file [file]
-  (slurp (.getCanonicalPath file)))
 
 (defn resource-response 
   [request-map]
