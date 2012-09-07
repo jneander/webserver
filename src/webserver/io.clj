@@ -10,5 +10,9 @@
   (java.io.PrintStream.
     (.getOutputStream socket)))
 
+(defn open-binary-writer [socket]
+  (java.io.FilterOutputStream.
+    (.getOutputStream socket)))
+
 (defn read-file [file]
   (slurp (.getCanonicalPath file)))
