@@ -50,6 +50,14 @@
       (should= 38400 (:length read))
       (should-not= nil (:body read)))))
 
+(describe "#read-text-file"
+
+  (it "reads a text file"
+    (let [file (File. "./spec/public_html/sample.txt")
+          read (read-text-file file)]
+      (should= 7 (:length read))
+      (should= "foobar\n" (:body read)))))
+
 (describe "#read-file"
 
   (it "reads a text file"

@@ -21,6 +21,10 @@
     (.read stream buffer)
     {:length length :body buffer}))
 
+(defn read-text-file [file]
+  (let [body (slurp file)]
+    {:length (.length body) :body body}))
+
 (defn read-file [file]
   (slurp (.getCanonicalPath file)))
 
