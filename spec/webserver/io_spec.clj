@@ -55,3 +55,17 @@
   (it "reads a text file"
     (let [file (File. "./spec/public_html/sample.txt")]
       (should= "foobar\n" (read-file file)))))
+
+(describe "#get-data-type"
+
+  (it "returns :text for text files"
+    (let [file (File. "./spec/public_html/sample.txt")]
+      (should= :text (get-data-type file))))
+
+  (it "returns :binary for image files"
+    (let [file (File. "./spec/public_html/image.jpeg")]
+      (should= :binary (get-data-type file))))
+  
+  (it "returns :unknown for other file types"
+    (let [file (File. "./spec/public_html/unknown")]
+      (should= :unknown (get-data-type file)))))

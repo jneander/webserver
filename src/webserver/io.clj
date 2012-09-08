@@ -23,3 +23,13 @@
 
 (defn read-file [file]
   (slurp (.getCanonicalPath file)))
+
+(defn- known-exts []
+  {"txt" :text
+   "jpeg" :binary})
+
+(defn get-data-type [file]
+  (let [parts (clojure.string/split (.getName file) #"\.")]
+    (if (> (.length parts) 1)
+      (get (known-exts) (last parts))
+      :unknown)))
