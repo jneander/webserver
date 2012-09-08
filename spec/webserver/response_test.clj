@@ -21,6 +21,13 @@
       (should= 200 (:status response))
       (should= "foobar\n" (:body response))))
 
+  (it "responds with requested binary content"
+    (let [request {:path (test-file-path "image.jpeg")
+                   :directory "."}
+          response (resource-response request)]
+      (should= 200 (:status response))
+      (should= 38400 (:content-length (:header response)))))
+
   (it "prefixes root-level links with single slashes"
     (let [request {:path "/" :directory "."}
           response (resource-response request)

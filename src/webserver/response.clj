@@ -1,5 +1,7 @@
 (ns webserver.response
-  (:require [webserver.io :refer [read-file]]
+  (:require [webserver.io :refer [read-text-file
+                                  read-binary-file
+                                  get-data-type]]
             [clojure.string :refer [join split]])
   (:import [java.io File]))
 
@@ -36,7 +38,8 @@
        " " (get (status-codes) (:status response))))
 
 (defn- content-length [response]
-  (.length (:body response)))
+  (or (:content-length (:header response))
+      (.length (:body response))))
 
 (defn- content-type [response]
   "text/html")
@@ -58,12 +61,23 @@
         pairs (map (fn [x] (split x #"=")) sections)]
     (into {} pairs)))
 
+(defn- read-file [file]
+  (if (= :text (get-data-type file))
+    (read-text-file file)
+    (read-binary-file file)))
+
+(defn- file-into-response [file response]
+  (let [file-result (read-file file)]
+    (assoc response :body (:body file-result)
+           :header (assoc (:header response)
+                          :content-length (:length file-result)))))
+
 (defn resource-response 
   [request-map]
   (let [file (File. (:directory request-map) (:path request-map))
         response (cond
                    (.isFile file)
-                   (body (ok-response) (read-file file))
+                   (file-into-response file (ok-response))
                    (.isDirectory file)
                    (body (ok-response) (list-directory request-map))
                    :else (not-found))]
