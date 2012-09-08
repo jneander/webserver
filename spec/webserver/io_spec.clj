@@ -74,6 +74,20 @@
     (let [file (File. "./spec/public_html/image.jpeg")]
       (should= :binary (get-data-type file))))
   
-  (it "returns :unknown for other file types"
+  (it "returns :unknown for unknown file types"
     (let [file (File. "./spec/public_html/unknown")]
       (should= :unknown (get-data-type file)))))
+
+(describe "#get-content-type"
+
+  (it "returns 'text/plain' for .txt files"
+    (let [file (File. "./spec/public_html/sample.txt")]
+      (should= "text/plain" (get-content-type file))))
+
+  (it "returns 'image/jpeg' for .jpeg files"
+    (let [file (File. "./spec/public_html/image.jpeg")]
+      (should= "image/jpeg" (get-content-type file))))
+  
+  (it "returns 'text/plain' for unknown file types"
+    (let [file (File. "./spec/public_html/unknown")]
+      (should= "text/plain" (get-content-type file)))))

@@ -32,8 +32,18 @@
   {"txt" :text
    "jpeg" :binary})
 
-(defn get-data-type [file]
+(defn- known-content-types []
+  {"txt" "text/plain"
+   "jpeg" "image/jpeg"})
+
+(defn- get-ext [file]
   (let [parts (clojure.string/split (.getName file) #"\.")]
-    (if (> (.length parts) 1)
-      (get (known-exts) (last parts))
-      :unknown)))
+    (if (> (.length parts) 1) (last parts) nil)))
+
+(defn get-data-type [file]
+  (let [ext (get-ext file)]
+    (if ext (get (known-exts) ext) :unknown)))
+
+(defn get-content-type [file]
+  (let [ext (get-ext file)]
+    (if ext (get (known-content-types) ext) "text/plain")))
