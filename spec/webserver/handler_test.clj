@@ -40,24 +40,28 @@
 
 (defn- route-response-output [path directory]
   (let [request (stub-request-header path)
-        client (mock-client-request request)
-        __ (route-response client directory)]
-    (.toString (.getOutputStream (mock-client-socket)))))
+        client (mock-client-request request)]
+    (route-response client directory)))
 
 (describe "#route-response"
 
   (it "includes header information"
-    (let [output (route-response-output "/spec/public_html/sample.txt" ".")]
+    (reset-client-output)
+    (route-response-output "/spec/public_html/sample.txt" ".")
+    (let [output (.toString (.getOutputStream (mock-client-socket)))]
       (should-contain "HTTP/1.1 200 OK" output)
       (should-contain "Host: localhost:8080" output)
       (should-contain "Content-Type: text/html" output)
       (should-contain "Content-Length: 7" output)))
 
   (it "merges the response header and body"
-    (let [output (route-response-output "/spec/public_html/sample.txt" ".")]
+    (reset-client-output)
+    (route-response-output "/spec/public_html/sample.txt" ".")
+    (let [output (.toString (.getOutputStream (mock-client-socket)))]
       (should-contain (stub-request-output) output)))
 
   (it "uses the directory to serve as root"
-    (let [output (route-response-output "/sample.txt"
-                                        "./spec/public_html/sample_directory")]
+    (reset-client-output)
+    (route-response-output "/sample.txt" "./spec/public_html/sample_directory")
+    (let [output (.toString (.getOutputStream (mock-client-socket)))]
       (should-contain "otherfoobar" output))))

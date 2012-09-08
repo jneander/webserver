@@ -45,5 +45,4 @@
 (defn route-response [client directory]
   (let [request (assoc (parse-request client) :directory directory)
         response (flatten-response (route-request request))]
-    (println response)
     (submit-response client response)))
