@@ -91,3 +91,11 @@
   (it "returns 'text/plain' for unknown file types"
     (let [file (File. "./spec/public_html/unknown")]
       (should= "text/plain" (get-content-type file)))))
+
+(describe "#content-data-type"
+
+  (it "returns :text for 'text/plain'"
+    (should= :text (content-data-type "text/plain")))
+  
+  (it "returns :binary for 'image/jpeg'"
+    (should= :binary (content-data-type "image/jpeg"))))

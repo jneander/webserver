@@ -47,3 +47,8 @@
 (defn get-content-type [file]
   (let [ext (get-ext file)]
     (if ext (get (known-content-types) ext) "text/plain")))
+
+(defn content-data-type [^String content-type]
+  (if (= "image/jpeg" content-type)
+    :binary
+    :text))

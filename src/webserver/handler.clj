@@ -3,7 +3,8 @@
             [webserver.router :refer [route-request]]
             [webserver.io :refer [open-string-reader
                                   open-string-writer
-                                  open-binary-writer]]
+                                  open-binary-writer
+                                  content-data-type]]
             [clojure.string :refer [join split]])
   (:import [java.io File]))
 
@@ -25,7 +26,7 @@
          (str "Content-Length: " (:content-length header-map) (line-ending))])))
 
 (defn- flatten-response [response]
-  {:data-type (if (= "image/jpeg" (:content-type (:header response))) :binary :text)
+  {:data-type (content-data-type (:content-type (:header response)))
    :header (flatten-header response)
    :body (:body response)})
 
