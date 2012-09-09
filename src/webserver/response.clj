@@ -81,22 +81,22 @@
     (content-type "text/html")
     (content-length)))
 
-(defn resource-response [request-map]
-  (let [file (File. (:directory request-map) (:path request-map))
+(defn resource-response [request]
+  (let [file (File. (:directory request) (:path request))
         response (cond
                    (.isFile file)
                    (file-into-response file (ok-response))
                    (.isDirectory file)
-                   (directory-into-response request-map (ok-response))
+                   (directory-into-response request (ok-response))
                    :else (not-found))]
-    (header response request-map)))
+    (header response request)))
 
-(defn echo-response [request-map]
+(defn echo-response [request]
   (-> (ok-response)
-    (body (str (:host request-map) (:path request-map)))
+    (body (str (:host request) (:path request)))
     (content-type "text/plain")
     (content-length)
-    (header request-map)))
+    (header request)))
 
 (defn echo-query-response [request]
   (let [response (ok-response)
