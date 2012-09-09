@@ -25,6 +25,7 @@
     (let [request {:path (test-file-path "image.jpeg")
                    :directory "."}
           response (resource-response request)]
+      (should= "image/jpeg" (:content-type (:header response)))
       (should= 200 (:status response))
       (should= 38400 (:content-length (:header response)))))
 
@@ -73,7 +74,6 @@
                    :directory "."}
           response-header (:header (resource-response request))]
       (should= 7 (:content-length response-header))
-      (should= "text/html" (:content-type response-header))
       (should= (:host request) (:host response-header))
       (should= "HTTP/1.1 200 OK" (:status-message response-header)))))
 
@@ -82,6 +82,7 @@
   (it "returns the request in the body"
     (let [request {:path "/foo" :host "localhost:8080" :directory "."}
           response (echo-response request)]
+      (should= "text/plain" (:content-type (:header response)))
       (should= "localhost:8080/foo" (:body response)))))
 
 (describe "#echo-query-response"
@@ -92,4 +93,5 @@
           response (echo-query-response request)
           expected (str "variable_1 = 123459876\r\n"
                         "variable_2 = some_value")]
+      (should= "text/plain" (:content-type (:header response)))
       (should= expected (:body response)))))

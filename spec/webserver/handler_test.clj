@@ -33,7 +33,7 @@
 (defn- stub-request-output []
   (str "HTTP/1.1 200 OK\r\n"
        "Host: localhost:8080\r\n"
-       "Content-Type: text/html\r\n"
+       "Content-Type: text/plain\r\n"
        "Content-Length: 7\r\n"
        "\r\n"
        "foobar\n"))
@@ -51,7 +51,7 @@
     (let [output (.toString (.getOutputStream (mock-client-socket)))]
       (should-contain "HTTP/1.1 200 OK" output)
       (should-contain "Host: localhost:8080" output)
-      (should-contain "Content-Type: text/html" output)
+      (should-contain "Content-Type: text/plain" output)
       (should-contain "Content-Length: 7" output)))
 
   (it "merges the response header and body"
@@ -64,4 +64,9 @@
     (reset-client-output)
     (route-response-output "/sample.txt" "./spec/public_html/sample_directory")
     (let [output (.toString (.getOutputStream (mock-client-socket)))]
-      (should-contain "otherfoobar" output))))
+      (should-contain "otherfoobar" output)))
+  
+  (it "uses a binary writer for a binary response body"
+    (reset-client-output)
+    (route-response-output "/spec/public_html/image.jpeg" ".")
+    (should= 38490 (.size (.getOutputStream (mock-client-socket))))))

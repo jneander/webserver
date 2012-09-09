@@ -2,7 +2,8 @@
   (:require [webserver.request :refer [map-request]]
             [webserver.router :refer [route-request]]
             [webserver.io :refer [open-string-reader
-                                  open-string-writer]]
+                                  open-string-writer
+                                  open-binary-writer]]
             [clojure.string :refer [join split]])
   (:import [java.io File]))
 
@@ -24,7 +25,7 @@
          (str "Content-Length: " (:content-length header-map) (line-ending))])))
 
 (defn- flatten-response [response]
-  {:body-type :text
+  {:data-type (if (= "image/jpeg" (:content-type (:header response))) :binary :text)
    :header (flatten-header response)
    :body (:body response)})
 
@@ -32,13 +33,20 @@
   (let [input (open-string-reader client)]
     (map-request (read-request-header input))))
 
-(defn- get-data-type [socket {type :body-type}] type)
+(defn- get-data-type [socket {type :data-type}] type)
 
 (defmulti submit-response get-data-type)
 
+(defmethod submit-response :binary [socket response]
+  (let [string-out (open-string-writer socket)
+        binary-out (open-binary-writer socket)]
+    (.print string-out (str (:header response)
+                          (line-ending)))
+    (.write binary-out (:body response))))
+
 (defmethod submit-response :default [socket response]
   (let [output (open-string-writer socket)]
-    (.println output (str (:header response)
+    (.print output (str (:header response)
                           (line-ending)
                           (:body response)))))
 
