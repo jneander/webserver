@@ -1,6 +1,31 @@
 (ns webserver.io
   (:import [java.io File]))
 
+(defn- known-exts []
+  {"txt" :text
+   "jpeg" :binary})
+
+(defn- known-content-types []
+  {"txt" "text/plain"
+   "jpeg" "image/jpeg"})
+
+(defn- get-ext [file]
+  (let [parts (clojure.string/split (.getName file) #"\.")]
+    (if (> (.length parts) 1) (last parts) nil)))
+
+(defn get-data-type [file]
+  (let [ext (get-ext file)]
+    (if ext (get (known-exts) ext) :unknown)))
+
+(defn get-content-type [file]
+  (let [ext (get-ext file)]
+    (if ext (get (known-content-types) ext) "text/plain")))
+
+(defn content-data-type [^String content-type]
+  (if (= "image/jpeg" content-type)
+    :binary
+    :text))
+
 (defn open-string-reader [socket]
   (java.io.BufferedReader. 
     (java.io.InputStreamReader.
@@ -26,29 +51,8 @@
     {:length (.length body) :body body}))
 
 (defn read-file [file]
-  (slurp (.getCanonicalPath file)))
-
-(defn- known-exts []
-  {"txt" :text
-   "jpeg" :binary})
-
-(defn- known-content-types []
-  {"txt" "text/plain"
-   "jpeg" "image/jpeg"})
-
-(defn- get-ext [file]
-  (let [parts (clojure.string/split (.getName file) #"\.")]
-    (if (> (.length parts) 1) (last parts) nil)))
-
-(defn get-data-type [file]
-  (let [ext (get-ext file)]
-    (if ext (get (known-exts) ext) :unknown)))
-
-(defn get-content-type [file]
-  (let [ext (get-ext file)]
-    (if ext (get (known-content-types) ext) "text/plain")))
-
-(defn content-data-type [^String content-type]
-  (if (= "image/jpeg" content-type)
-    :binary
-    :text))
+  (let [data-type (get-data-type file)
+        content (if (= :binary data-type)
+                  (read-binary-file file)
+                  (read-text-file file))]
+    (merge content {:data-type data-type})))

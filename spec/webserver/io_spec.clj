@@ -61,8 +61,16 @@
 (describe "#read-file"
 
   (it "reads a text file"
-    (let [file (File. "./spec/public_html/sample.txt")]
-      (should= "foobar\n" (read-file file)))))
+    (let [content (read-file (File. "./spec/public_html/sample.txt"))]
+      (should= "foobar\n" (:body content))
+      (should= 7 (:length content))
+      (should= :text (:data-type content))))
+
+  (it "reads a binary file"
+    (let [content (read-file (File. "./spec/public_html/image.jpeg"))]
+      (should= (class (byte-array [(byte 1)])) (class (:body content)))
+      (should= 38400 (:length content))
+      (should= :binary (:data-type content)))))
 
 (describe "#get-data-type"
 
