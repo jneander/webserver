@@ -7,6 +7,12 @@
 (defn- test-file-path [file]
   (str "/spec/public_html/" file))
 
+(defn- stub-resource-request [file]
+  {:http "1.1"
+   :host "localhost:8080"
+   :path (str "/spec/public_html/" file)
+   :directory "."})
+
 (describe "#not-found"
   (it "returns 'not found' response"
     (let [response (not-found)]
@@ -68,14 +74,22 @@
         (should= 404 (:status response)))))
   
   (it "populates the header"
-    (let [request {:http "1.1"
-                   :host "localhost:8080"
-                   :path (str (test-file-path "sample.txt"))
-                   :directory "."}
+    (let [request (stub-resource-request "sample.txt")
           response-header (:header (resource-response request))]
       (should= 7 (:content-length response-header))
       (should= (:host request) (:host response-header))
-      (should= "HTTP/1.1 200 OK" (:status-message response-header)))))
+      (should= "HTTP/1.1 200 OK" (:status-message response-header))))
+
+  (it "describes the data type"
+    (let [request (stub-resource-request "image.jpeg")
+          response (resource-response request)]
+      (should= :binary (:data-type response)))
+    (let [request (stub-resource-request "sample.txt")
+          response (resource-response request)]
+      (should= :text (:data-type response)))
+    (let [request (stub-resource-request "")
+          response (resource-response request)]
+      (should= :text (:data-type response)))))
 
 (describe "#echo-response"
 
@@ -83,7 +97,12 @@
     (let [request {:path "/foo" :host "localhost:8080" :directory "."}
           response (echo-response request)]
       (should= "text/plain" (:content-type (:header response)))
-      (should= "localhost:8080/foo" (:body response)))))
+      (should= "localhost:8080/foo" (:body response))))
+
+  (it "describes the data type"
+    (let [request (stub-resource-request "/form")
+          response (echo-response request)]
+      (should= :text (:data-type response)))))
 
 (describe "#echo-query-response"
 
@@ -94,4 +113,9 @@
           expected (str "variable_1 = 123459876\r\n"
                         "variable_2 = some_value")]
       (should= "text/plain" (:content-type (:header response)))
-      (should= expected (:body response)))))
+      (should= expected (:body response))))
+
+  (it "describes the data type"
+    (let [request (stub-resource-request "/some-script-url?foo=bar")
+          response (echo-query-response request)]
+      (should= :text (:data-type response)))))

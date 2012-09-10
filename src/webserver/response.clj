@@ -1,8 +1,8 @@
 (ns webserver.response
-  (:require [webserver.io :refer [read-text-file
-                                  read-binary-file
-                                  get-data-type
-                                  get-content-type]]
+  (:require [webserver.mime :refer [ext-to-mime-type
+                                    ext-to-data-type]]
+            [webserver.io :refer [read-file
+                                  get-ext]]
             [clojure.string :refer [join split]])
   (:import [java.io File]))
 
@@ -28,6 +28,9 @@
 (defn- assoc-header [response key value]
   (assoc response :header (assoc (:header response) key value)))
 
+(defn- data-type [response type]
+  (assoc response :data-type type))
+
 (defn- header [response request]
   (-> response
     (assoc-header :host (:host request))
@@ -50,11 +53,6 @@
         pairs (map (fn [x] (split x #"=")) sections)]
     (into {} pairs)))
 
-(defn- read-file [file]
-  (if-not (= :binary (get-data-type file))
-    (read-text-file file)
-    (read-binary-file file)))
-
 (defn- to-link [path name]
   (str "<a href=\"" path name "\">" name "</a>"))
 
@@ -71,12 +69,14 @@
 (defn- file-into-response [file response]
   (let [file-result (read-file file)]
     (-> response
+      (data-type (ext-to-data-type (get-ext file)))
       (body (:body file-result))
-      (content-type (get-content-type file))
+      (content-type (ext-to-mime-type (get-ext file)))
       (content-length (:length file-result)))))
 
 (defn- directory-into-response [request response]
   (-> response
+    (data-type :text)
     (body (list-directory request))
     (content-type "text/html")
     (content-length)))
@@ -93,17 +93,18 @@
 
 (defn echo-response [request]
   (-> (ok-response)
+    (data-type :text)
     (body (str (:host request) (:path request)))
     (content-type "text/plain")
     (content-length)
     (header request)))
 
 (defn echo-query-response [request]
-  (let [response (ok-response)
-        mapped-query (map-query-string (:path request))
+  (let [mapped-query (map-query-string (:path request))
         formatter (fn [x] (str (key x) " = " (val x)))
         formatted (map formatter mapped-query)]
-    (-> response
+    (-> (ok-response)
+      (data-type :text)
       (body (join "\r\n" formatted))
       (content-type "text/plain")
       (content-length)

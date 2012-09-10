@@ -1,10 +1,10 @@
 (ns webserver.handler
   (:require [webserver.request :refer [map-request]]
             [webserver.router :refer [route-request]]
+            [webserver.mime :refer [mime-to-data-type]]
             [webserver.io :refer [open-string-reader
                                   open-string-writer
-                                  open-binary-writer
-                                  content-data-type]]
+                                  open-binary-writer]]
             [clojure.string :refer [join split]])
   (:import [java.io File]))
 
@@ -26,9 +26,7 @@
          (str "Content-Length: " (:content-length header-map) (line-ending))])))
 
 (defn- flatten-response [response]
-  {:data-type (content-data-type (:content-type (:header response)))
-   :header (flatten-header response)
-   :body (:body response)})
+  (assoc response :header (flatten-header response)))
 
 (defn- parse-request [client]
   (let [input (open-string-reader client)]

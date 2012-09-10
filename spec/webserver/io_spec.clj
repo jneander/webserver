@@ -13,6 +13,15 @@
   (defn- reset-output []
     (.reset output-stream)))
 
+(describe "#get-ext"
+
+  (it "returns the extension of files"
+    (should= "txt" (get-ext (File. "./sample.txt")))
+    (should= "jpeg" (get-ext (File. "./image.jpeg"))))
+
+  (it "returns nil for files with no extension"
+    (should= nil (get-ext (File. "no-extension")))))
+
 (describe "#open-string-reader"
 
   (it "returns a BufferedReader connected to the socket"
@@ -42,22 +51,6 @@
       (should= java.io.FilterOutputStream (class writer))
       (should= 30 (.size (.getOutputStream socket))))))
 
-(describe "#read-binary-file"
-
-  (it "reads a binary file"
-    (let [file (File. "./spec/public_html/image.jpeg")
-          read (read-binary-file file)]
-      (should= 38400 (:length read))
-      (should-not= nil (:body read)))))
-
-(describe "#read-text-file"
-
-  (it "reads a text file"
-    (let [file (File. "./spec/public_html/sample.txt")
-          read (read-text-file file)]
-      (should= 7 (:length read))
-      (should= "foobar\n" (:body read)))))
-
 (describe "#read-file"
 
   (it "reads a text file"
@@ -71,39 +64,3 @@
       (should= (class (byte-array [(byte 1)])) (class (:body content)))
       (should= 38400 (:length content))
       (should= :binary (:data-type content)))))
-
-(describe "#get-data-type"
-
-  (it "returns :text for text files"
-    (let [file (File. "./spec/public_html/sample.txt")]
-      (should= :text (get-data-type file))))
-
-  (it "returns :binary for image files"
-    (let [file (File. "./spec/public_html/image.jpeg")]
-      (should= :binary (get-data-type file))))
-  
-  (it "returns :unknown for unknown file types"
-    (let [file (File. "./spec/public_html/unknown")]
-      (should= :unknown (get-data-type file)))))
-
-(describe "#get-content-type"
-
-  (it "returns 'text/plain' for .txt files"
-    (let [file (File. "./spec/public_html/sample.txt")]
-      (should= "text/plain" (get-content-type file))))
-
-  (it "returns 'image/jpeg' for .jpeg files"
-    (let [file (File. "./spec/public_html/image.jpeg")]
-      (should= "image/jpeg" (get-content-type file))))
-  
-  (it "returns 'text/plain' for unknown file types"
-    (let [file (File. "./spec/public_html/unknown")]
-      (should= "text/plain" (get-content-type file)))))
-
-(describe "#content-data-type"
-
-  (it "returns :text for 'text/plain'"
-    (should= :text (content-data-type "text/plain")))
-  
-  (it "returns :binary for 'image/jpeg'"
-    (should= :binary (content-data-type "image/jpeg"))))
