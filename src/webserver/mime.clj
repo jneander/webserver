@@ -3,7 +3,9 @@
 (defn- mime-types []
   {"text/plain" {:ext ["txt"] :data-type :text}
    "text/html" {:ext ["html"] :data-type :text}
-   "image/jpeg" {:ext ["jpg" "jpeg"] :data-type :binary}})
+   "image/jpeg" {:ext ["jpg" "jpeg"] :data-type :binary}
+   "image/png" {:ext ["png"] :data-type :binary}
+   "image/gif" {:ext ["gif"] :data-type :binary}})
 
 (defn ext-to-mime-type [ext]
   (or (first (for [[k v] (mime-types) 

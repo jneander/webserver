@@ -7,9 +7,11 @@
   (it "maps the following extensions to their MIME types"
     (should= "text/plain" (ext-to-mime-type "txt"))
     (should= "text/html" (ext-to-mime-type "html"))
-    (should= "image/jpeg" (ext-to-mime-type "jpeg")))
+    (should= "image/jpeg" (ext-to-mime-type "jpeg"))
+    (should= "image/png" (ext-to-mime-type "png"))
+    (should= "image/gif" (ext-to-mime-type "gif")))
   
-  (it "maps unknown extensions to 'text/plain' by default"
+  (it "maps unknown extensions to 'application/octet-stream' by default"
     (should= "application/octet-stream" (ext-to-mime-type "unknown"))))
 
 (describe "#ext-to-data-type"
