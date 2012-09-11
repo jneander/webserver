@@ -18,7 +18,7 @@
 
 (defn not-found []
   {:status 404
-   :header {}
+   :header {:content-type "text/html" :content-length 0}
    :body ""})
 
 (defn- status-message [request response]

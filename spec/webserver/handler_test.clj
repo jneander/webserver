@@ -20,19 +20,19 @@
 
 (defn- stub-request-header [path]
   (str "GET " path " HTTP/1.1\r\n"
-       "Host: localhost:8080\r\n\r\n"))
+       "Host: http://localhost:8080\r\n\r\n"))
 
 (defn- stub-response-map []
   {:status 200
    :header {:status-message "HTTP/1.1 200 OK"
-            :host "localhost:8080"
+            :host "http://localhost:8080"
             :content-type "text/html"
             :content-length 7}
    :body "foobar"})
 
 (defn- stub-request-output []
   (str "HTTP/1.1 200 OK\r\n"
-       "Host: localhost:8080\r\n"
+       "Host: http://localhost:8080\r\n"
        "Content-Type: text/plain\r\n"
        "Content-Length: 7\r\n"
        "\r\n"
@@ -50,7 +50,7 @@
     (route-response-output "/spec/public_html/sample.txt" ".")
     (let [output (.toString (.getOutputStream (mock-client-socket)))]
       (should-contain "HTTP/1.1 200 OK" output)
-      (should-contain "Host: localhost:8080" output)
+      (should-contain "Host: http://localhost:8080" output)
       (should-contain "Content-Type: text/plain" output)
       (should-contain "Content-Length: 7" output)))
 
@@ -69,10 +69,10 @@
   (it "uses a binary writer for a binary response body"
     (reset-client-output)
     (route-response-output "/spec/public_html/image.jpeg" ".")
-    (should= 38490 (.size (.getOutputStream (mock-client-socket)))))
+    (should= 38497 (.size (.getOutputStream (mock-client-socket)))))
 
   (it "includes 'Location' when routing redirect"
     (reset-client-output)
     (route-response-output "/redirect" ".")
     (let [output (.toString (.getOutputStream (mock-client-socket)))]
-      (should-contain "Location: /" output))))
+      (should-contain "Location: http://localhost:8080" output))))

@@ -17,7 +17,7 @@
   (echo-query-response request))
 
 (defmethod route-request "/redirect" [request]
-  (redirect-response request "/"))
+  (redirect-response request (:host request)))
 
 (defmethod route-request :default [request]
   (resource-response request))

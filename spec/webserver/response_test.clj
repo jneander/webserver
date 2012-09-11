@@ -9,7 +9,7 @@
 
 (defn- stub-resource-request [file]
   {:http "1.1"
-   :host "localhost:8080"
+   :host "http://localhost:8080"
    :path (str "/spec/public_html/" file)
    :directory "."})
 
@@ -21,15 +21,13 @@
 (describe "#resource-response"
 
   (it "returns the body of the specified file"
-    (let [request {:path (test-file-path "sample.txt")
-                   :directory "."}
+    (let [request (stub-resource-request "sample.txt")
           response (resource-response request)]
       (should= 200 (:status response))
       (should= "foobar\n" (:body response))))
 
   (it "responds with requested binary content"
-    (let [request {:path (test-file-path "image.jpeg")
-                   :directory "."}
+    (let [request (stub-resource-request "image.jpeg")
           response (resource-response request)]
       (should= "image/jpeg" (:content-type (:header response)))
       (should= 200 (:status response))
@@ -42,7 +40,7 @@
       (should-contain expected (:body response))))
 
   (it "returns a list of directory contents for valid directory"
-    (let [request {:path (test-file-path "") :directory "."}
+    (let [request (stub-resource-request "")
           response (resource-response request)
           files ["file1.txt" "file2.txt" "sample.txt" "sample_directory"]]
       (should= 200 (:status response))
@@ -50,8 +48,7 @@
         (should-contain filename (:body response)))))
 
   (it "returns a list of directory contents for nested directory"
-    (let [request {:path (test-file-path "sample_directory")
-                   :directory "."}
+    (let [request (stub-resource-request "sample_directory")
           response (resource-response request)
           expected (str "<p><a href=\""
                         (:path request) "/sample.txt\">"
@@ -59,11 +56,13 @@
       (should= expected (:body response))))
 
   (it "returns 'not found' response for invalid resource"
-    (let [request {:path (str (test-file-path "does-not-exist.txt"))
-                   :directory "."}
+    (let [request (stub-resource-request "does-not-exist.txt")
           response (resource-response request)]
       (should= 404 (:status response))
-      (should-contain "Not Found" (:status-message (:header response)))))
+      (should-contain "Not Found" (:status-message (:header response)))
+      (should= "" (:body response))
+      (should= 0 (:content-length (:header response)))
+      (should= "text/html" (:content-type (:header response)))))
 
   (it "uses provided directory"
     (let [ok-request {:path (test-file-path "sample.txt") :directory "."}
@@ -94,10 +93,10 @@
 (describe "#echo-response"
 
   (it "returns the request in the body"
-    (let [request {:path "/foo" :host "localhost:8080" :directory "."}
+    (let [request {:path "/foo" :host "http://localhost:8080" :directory "."}
           response (echo-response request)]
       (should= "text/plain" (:content-type (:header response)))
-      (should= "localhost:8080/foo" (:body response))))
+      (should= "http://localhost:8080/foo" (:body response))))
 
   (it "describes the data type"
     (let [request (stub-resource-request "/form")
@@ -108,7 +107,7 @@
 
   (it "echoes the query variables and values"
     (let [request {:path "/some-script-url?variable_1=123459876&variable_2=some_value"
-                   :host "localhost:8080" :directory "."}
+                   :host "http://localhost:8080" :directory "."}
           response (echo-query-response request)
           expected (str "variable_1 = 123459876\r\n"
                         "variable_2 = some_value")]
@@ -117,14 +116,14 @@
 
   (it "is blank when no parameters are supplied"
     (let [request {:path "/some-script-url"
-                   :host "localhost:8080" :directory "."}
+                   :host "http://localhost:8080" :directory "."}
           response (echo-query-response request)]
       (should= 200 (:status response))
       (should= "" (:body response))))
 
   (it "maps no-assignment parameters to 'true'"
     (let [request {:path "/some-script-url?my-param"
-                   :host "localhost:8080" :directory "."}
+                   :host "http://localhost:8080" :directory "."}
           response (echo-query-response request)]
       (should= "my-param = true" (:body response))))
 
@@ -137,14 +136,14 @@
 
   (it "returns a redirect response"
     (let [request {:http 1.1 :path "/redirect" 
-                   :host "localhost:8080" :directory "."}
+                   :host "http://localhost:8080" :directory "."}
           response (redirect-response request "/")
           header (:header response)]
       (should= 302 (:status response))
       (should= "/" (:location header))
       (should= :text (:data-type response))
       (should= "HTTP/1.1 302 Found" (:status-message header))
-      (should= "localhost:8080" (:host header))
+      (should= "http://localhost:8080" (:host header))
       (should= 0 (:content-length header))
       (should= "text/html" (:content-type header))
       (should= "" (:body response)))))

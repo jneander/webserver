@@ -18,8 +18,7 @@
   (it "maps different request types"
     (should= "PUT" (:type (map-request "PUT / HTTP/1.1")))
     (should= "POST" (:type (map-request "POST / HTTP/1.1")))
-    (should= "HEAD" (:type (map-request "HEAD / HTTP/1.1")))
-    )
+    (should= "HEAD" (:type (map-request "HEAD / HTTP/1.1"))))
 
   (it "maps a nested directory request"
     (let [raw-request "PUT /stuff/more/stop/ HTTP/1.0"
@@ -28,6 +27,6 @@
       (should= "/stuff/more/stop/" (:path request))
       (should= "1.0" (:http request))))
 
-  (it "maps the host"
+  (it "maps the host using full path"
     (let [request (map-request (request-header))]
-      (should= "localhost:8080" (:host request)))))
+      (should= "http://localhost:8080" (:host request)))))
