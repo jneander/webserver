@@ -83,6 +83,7 @@
   (it "describes the data type"
     (let [request (stub-resource-request "image.jpeg")
           response (resource-response request)]
+      (println response)
       (should= :binary (:data-type response)))
     (let [request (stub-resource-request "sample.txt")
           response (resource-response request)]
@@ -119,3 +120,18 @@
     (let [request (stub-resource-request "/some-script-url?foo=bar")
           response (echo-query-response request)]
       (should= :text (:data-type response)))))
+
+(describe "#redirect-response"
+
+  (it "returns a redirect response"
+    (let [request {:http 1.1 :path "/redirect" 
+                   :host "localhost:8080" :directory "."}
+          response (redirect-response request)
+          header (:header response)]
+      (should= 302 (:status response))
+      (should= :text (:data-type response))
+      (should= "HTTP/1.1 302 Found" (:status-message header))
+      (should= "localhost:8080" (:host header))
+      (should= 0 (:content-length header))
+      (should= "text/plain" (:content-type header))
+      (should= "" (:body response)))))

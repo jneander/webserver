@@ -8,7 +8,8 @@
 
 (defn- status-codes []
   {200 "OK"
-   404 "Not Found"})
+   404 "Not Found"
+   302 "Found"})
 
 (defn ok-response []
   {:status 200
@@ -109,3 +110,12 @@
       (content-type "text/plain")
       (content-length)
       (header request))))
+
+(defn redirect-response [request]
+  (let [response {:status 302}]
+    (-> response
+      (header request)
+      (data-type :text)
+      (content-length 0)
+      (content-type "text/plain")
+      (body ""))))
