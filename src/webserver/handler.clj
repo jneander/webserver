@@ -19,11 +19,15 @@
 
 (defn- flatten-header [response]
   (let [header-map (:header response)]
-    (join (line-ending) 
-        [(:status-message header-map)
-         (str "Host: " (:host header-map))
-         (str "Content-Type: " (:content-type header-map))
-         (str "Content-Length: " (:content-length header-map) (line-ending))])))
+    (join (line-ending)
+          (remove nil? 
+                  [(:status-message header-map)
+                   (str "Host: " (:host header-map))
+                   (if (:location header-map) 
+                     (str "Location: " (:location header-map)))
+                   (str "Content-Type: " (:content-type header-map))
+                   (str "Content-Length: " (:content-length header-map) 
+                        (line-ending))]))))
 
 (defn- flatten-response [response]
   (assoc response :header (flatten-header response)))
@@ -40,14 +44,14 @@
   (let [string-out (open-string-writer socket)
         binary-out (open-binary-writer socket)]
     (.print string-out (str (:header response)
-                          (line-ending)))
+                            (line-ending)))
     (.write binary-out (:body response))))
 
 (defmethod submit-response :default [socket response]
   (let [output (open-string-writer socket)]
     (.print output (str (:header response)
-                          (line-ending)
-                          (:body response)))))
+                        (line-ending)
+                        (:body response)))))
 
 (defn route-response [client directory]
   (let [request (assoc (parse-request client) :directory directory)

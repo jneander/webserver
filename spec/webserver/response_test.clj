@@ -126,12 +126,13 @@
   (it "returns a redirect response"
     (let [request {:http 1.1 :path "/redirect" 
                    :host "localhost:8080" :directory "."}
-          response (redirect-response request)
+          response (redirect-response request "/")
           header (:header response)]
       (should= 302 (:status response))
+      (should= "/" (:location header))
       (should= :text (:data-type response))
       (should= "HTTP/1.1 302 Found" (:status-message header))
       (should= "localhost:8080" (:host header))
       (should= 0 (:content-length header))
-      (should= "text/plain" (:content-type header))
+      (should= "text/html" (:content-type header))
       (should= "" (:body response)))))

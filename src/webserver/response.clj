@@ -37,6 +37,9 @@
     (assoc-header :host (:host request))
     (assoc-header :status-message (status-message request response))))
 
+(defn- location [response path]
+  (assoc-header response :location path))
+
 (defn- content-type [response type]
   (assoc-header response :content-type type))
 
@@ -111,11 +114,12 @@
       (content-length)
       (header request))))
 
-(defn redirect-response [request]
+(defn redirect-response [request path]
   (let [response {:status 302}]
     (-> response
       (header request)
+      (location path)
+      (body "")
       (data-type :text)
-      (content-length 0)
-      (content-type "text/plain")
-      (body ""))))
+      (content-length)
+      (content-type "text/html"))))

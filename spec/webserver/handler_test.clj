@@ -69,4 +69,10 @@
   (it "uses a binary writer for a binary response body"
     (reset-client-output)
     (route-response-output "/spec/public_html/image.jpeg" ".")
-    (should= 38490 (.size (.getOutputStream (mock-client-socket))))))
+    (should= 38490 (.size (.getOutputStream (mock-client-socket)))))
+
+  (it "includes 'Location' when routing redirect"
+    (reset-client-output)
+    (route-response-output "/redirect" ".")
+    (let [output (.toString (.getOutputStream (mock-client-socket)))]
+      (should-contain "Location: /" output))))
