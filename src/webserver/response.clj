@@ -51,11 +51,18 @@
 (defn- body [response content]
   (assoc response :body content))
 
+(defn- get-parameter-section [path]
+  (second (split path #"\?")))
+
+(defn- map-parameter-values [param-strings]
+  (map #(let [pair (split % #"=")]
+          [(first pair) (or (second pair) true)]) param-strings))
+
 (defn- map-query-string [query]
-  (let [query (last (split query #"\?"))
-        sections (split query #"&")
-        pairs (map (fn [x] (split x #"=")) sections)]
-    (into {} pairs)))
+  (let [query (second (split query #"\?"))
+        sections (if query (split query #"&"))
+        pairs (if sections (map-parameter-values sections))]
+    (if pairs (into {} pairs))))
 
 (defn- to-link [path name]
   (str "<a href=\"" path name "\">" name "</a>"))

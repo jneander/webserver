@@ -18,6 +18,10 @@
   (it "routes '/form' to ok-response"
     (let [response (route-request {:path "/form"})]
       (should= 200 (:status response))))
+
+  (it "routes '/some-script-url' to ok-response"
+    (let [response (route-request (stub-request "/some-script-url"))]
+      (should= 200 (:status response))))
   
   (it "routes '/redirect' to redirect-response"
     (let [response (route-request (stub-request "/redirect"))]

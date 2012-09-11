@@ -83,7 +83,6 @@
   (it "describes the data type"
     (let [request (stub-resource-request "image.jpeg")
           response (resource-response request)]
-      (println response)
       (should= :binary (:data-type response)))
     (let [request (stub-resource-request "sample.txt")
           response (resource-response request)]
@@ -115,6 +114,19 @@
                         "variable_2 = some_value")]
       (should= "text/plain" (:content-type (:header response)))
       (should= expected (:body response))))
+
+  (it "is blank when no parameters are supplied"
+    (let [request {:path "/some-script-url"
+                   :host "localhost:8080" :directory "."}
+          response (echo-query-response request)]
+      (should= 200 (:status response))
+      (should= "" (:body response))))
+
+  (it "maps no-assignment parameters to 'true'"
+    (let [request {:path "/some-script-url?my-param"
+                   :host "localhost:8080" :directory "."}
+          response (echo-query-response request)]
+      (should= "my-param = true" (:body response))))
 
   (it "describes the data type"
     (let [request (stub-resource-request "/some-script-url?foo=bar")
